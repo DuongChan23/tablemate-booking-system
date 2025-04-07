@@ -94,7 +94,7 @@ const menuData = {
     {
       id: 12,
       name: 'Bordeaux Selection',
-      description: 'Rotating premium selection from our cellar, ask your server for today's pour.',
+      description: 'Rotating premium selection from our cellar, ask your server for today\'s pour.',
       price: '$22.00/glass',
       image: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?q=80&w=400&auto=format&fit=crop'
     }
