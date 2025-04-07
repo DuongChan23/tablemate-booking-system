@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const currentUser = authService.getCurrentUser();
         if (currentUser) {
-          setUser(currentUser);
+          setUser(currentUser as User);
         }
       } catch (error) {
         console.error("Auth error:", error);
@@ -66,7 +66,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('auth_token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
-      setUser(response.user);
+      // Ensure the role is correctly typed before setting the user
+      const userData = {
+        ...response.user,
+        role: response.user.role as 'admin' | 'user'
+      };
+      
+      setUser(userData);
     } catch (err: any) {
       setError(err.message || 'Failed to login');
       throw err;
@@ -86,7 +92,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('auth_token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
-      setUser(response.user);
+      // Ensure the role is correctly typed before setting the user
+      const userData = {
+        ...response.user,
+        role: response.user.role as 'admin' | 'user'
+      };
+      
+      setUser(userData);
     } catch (err: any) {
       setError(err.message || 'Failed to register');
       throw err;

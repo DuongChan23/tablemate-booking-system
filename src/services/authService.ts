@@ -36,7 +36,7 @@ const authService = {
         email: credentials.email,
         firstName: 'Admin',
         lastName: 'User',
-        role: 'admin'
+        role: 'admin' as const
       }
     };
   },
@@ -51,7 +51,7 @@ const authService = {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
-        role: 'user'
+        role: 'user' as const
       }
     };
   },
