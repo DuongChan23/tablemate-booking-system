@@ -6,21 +6,23 @@ import { User } from '@/types';
 const mockUsers: User[] = [
   {
     id: '1',
+    name: 'Admin User',
     email: 'admin@tablemate.com',
-    firstName: 'Admin',
-    lastName: 'User',
-    role: 'admin',
+    passwordHash: 'hashed_password_here',
     phone: '555-123-4567',
-    address: '123 Admin St, City'
+    address: '123 Admin St, City',
+    role: 'admin',
+    createdAt: '2025-01-01T00:00:00'
   },
   {
     id: '2',
+    name: 'Regular User',
     email: 'user@example.com',
-    firstName: 'Regular',
-    lastName: 'User',
-    role: 'user',
+    passwordHash: 'hashed_password_here',
     phone: '555-987-6543',
-    address: '456 User Ave, Town'
+    address: '456 User Ave, Town',
+    role: 'user',
+    createdAt: '2025-01-02T00:00:00'
   }
 ];
 
@@ -34,11 +36,12 @@ const userService = {
     return mockUsers.find(user => user.id === id);
   },
   
-  create: async (userData: Omit<User, 'id'>) => {
+  create: async (userData: Omit<User, 'id' | 'createdAt'>) => {
     // This would be an actual API call in production
     const newUser = {
       ...userData,
       id: `user${Math.floor(Math.random() * 1000)}`,
+      createdAt: new Date().toISOString()
     };
     return newUser;
   },

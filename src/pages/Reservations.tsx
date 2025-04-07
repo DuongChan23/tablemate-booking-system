@@ -11,7 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { CalendarIcon, Clock } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const timeSlots = [
@@ -19,11 +19,20 @@ const timeSlots = [
   "20:00", "20:30", "21:00", "21:30", "22:00"
 ];
 
+const tableTypes = [
+  { value: "regular", label: "Regular Table" },
+  { value: "window", label: "Window Table" },
+  { value: "booth", label: "Booth" },
+  { value: "large", label: "Large Group Table" },
+  { value: "private", label: "Private Room" }
+];
+
 const Reservations = () => {
   const { toast } = useToast();
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState<string | undefined>(undefined);
   const [guests, setGuests] = useState<string>("2");
+  const [tableType, setTableType] = useState<string>("regular");
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -59,7 +68,7 @@ const Reservations = () => {
     setTimeout(() => {
       toast({
         title: "Reservation Successful",
-        description: `Your reservation for ${guests} guests on ${format(date, 'MMMM d, yyyy')} at ${time} has been confirmed.`,
+        description: `Your ${tableType} reservation for ${guests} guests on ${format(date, 'MMMM d, yyyy')} at ${time} has been confirmed.`,
       });
       setIsLoading(false);
       // In a real app, you might redirect to a confirmation page or dashboard
@@ -197,6 +206,22 @@ const Reservations = () => {
                             </SelectContent>
                           </Select>
                         </div>
+                      </div>
+                      
+                      <div className="grid gap-2">
+                        <Label htmlFor="tableType">Table Type</Label>
+                        <Select value={tableType} onValueChange={setTableType}>
+                          <SelectTrigger id="tableType">
+                            <SelectValue placeholder="Select table type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {tableTypes.map((type) => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                       
                       <div className="grid gap-2">

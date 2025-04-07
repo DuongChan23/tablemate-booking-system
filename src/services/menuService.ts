@@ -11,7 +11,7 @@ const mockMenuItems: MenuItem[] = [
     price: 18,
     image: 'https://images.unsplash.com/photo-1606255557509-6ba258c2b5e2',
     category: 'starter',
-    available: true
+    isActive: true
   },
   {
     id: '2',
@@ -20,7 +20,7 @@ const mockMenuItems: MenuItem[] = [
     price: 42,
     image: 'https://images.unsplash.com/photo-1544025162-d76694265947',
     category: 'main',
-    available: true
+    isActive: true
   },
   // ... more menu items would be here
 ];

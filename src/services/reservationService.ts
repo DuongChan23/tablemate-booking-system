@@ -1,23 +1,46 @@
 
 import api from './api';
-import { Reservation } from '@/types';
+import { Reservation, ReservationMenuItem } from '@/types';
+
+// Mock reservation menu items for demonstration
+const mockReservationMenuItems: ReservationMenuItem[] = [
+  {
+    reservationId: '1',
+    menuItemId: '1',
+    quantity: 2
+  },
+  {
+    reservationId: '1',
+    menuItemId: '3',
+    quantity: 1
+  },
+  {
+    reservationId: '2',
+    menuItemId: '2',
+    quantity: 2
+  }
+];
 
 // Mock reservations for demonstration
 const mockReservations: Reservation[] = [
   {
     id: '1',
+    userId: 'user1',
     customerId: 'cust1',
-    dateTime: '2025-04-10T18:30:00',
-    guests: 4,
+    reservationDate: '2025-04-10T18:30:00',
+    numberOfGuests: 4,
+    tableType: 'window',
     specialRequests: 'Window seat preferred',
     status: 'confirmed',
     createdAt: '2025-04-01T10:15:00'
   },
   {
     id: '2',
+    userId: 'user1',
     customerId: 'cust2',
-    dateTime: '2025-04-10T19:00:00',
-    guests: 2,
+    reservationDate: '2025-04-10T19:00:00',
+    numberOfGuests: 2,
+    tableType: 'regular',
     specialRequests: 'Anniversary dinner',
     status: 'pending',
     createdAt: '2025-04-02T09:20:00'
@@ -41,7 +64,12 @@ const reservationService = {
   },
   
   getById: async (id: string) => {
-    return mockReservations.find(reservation => reservation.id === id);
+    const reservation = mockReservations.find(res => res.id === id);
+    if (reservation) {
+      const menuItems = mockReservationMenuItems.filter(item => item.reservationId === id);
+      return { ...reservation, menuItems };
+    }
+    return null;
   },
   
   create: async (reservationData: Omit<Reservation, 'id' | 'createdAt'>) => {
@@ -70,6 +98,30 @@ const reservationService = {
   
   getCustomerInfo: async (customerId: string) => {
     return mockCustomers[customerId] || { name: 'Unknown', phone: 'N/A' };
+  },
+  
+  addMenuItemToReservation: async (reservationId: string, menuItemId: string, quantity: number) => {
+    // This would be an actual API call in production
+    const existingItem = mockReservationMenuItems.find(
+      item => item.reservationId === reservationId && item.menuItemId === menuItemId
+    );
+    
+    if (existingItem) {
+      existingItem.quantity += quantity;
+      return existingItem;
+    } else {
+      const newItem = {
+        reservationId,
+        menuItemId,
+        quantity
+      };
+      mockReservationMenuItems.push(newItem);
+      return newItem;
+    }
+  },
+  
+  getReservationMenuItems: async (reservationId: string) => {
+    return mockReservationMenuItems.filter(item => item.reservationId === reservationId);
   }
 };
 

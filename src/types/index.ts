@@ -1,24 +1,26 @@
 
 export interface User {
   id: string;
+  name: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: 'admin' | 'user';
+  passwordHash: string;
   phone?: string;
   address?: string;
+  role: 'admin' | 'user';
+  createdAt: string;
 }
 
 export interface Customer {
   id: string;
-  userId: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone: string;
   address?: string;
   visits: number;
+  lastVisit?: string;
+  totalSpent: number;
   status: 'active' | 'inactive';
+  createdAt: string;
 }
 
 export interface MenuItem {
@@ -27,16 +29,30 @@ export interface MenuItem {
   description: string;
   price: number;
   image?: string;
-  category: 'popular' | 'starter' | 'main' | 'dessert';
-  available: boolean;
+  category: string;
+  isActive: boolean;
 }
 
 export interface Reservation {
   id: string;
+  userId: string;
   customerId: string;
-  dateTime: string;
-  guests: number;
+  reservationDate: string;
+  numberOfGuests: number;
+  tableType: string;
   specialRequests?: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   createdAt: string;
+  menuItems?: ReservationMenuItem[];
+}
+
+export interface ReservationMenuItem {
+  reservationId: string;
+  menuItemId: string;
+  quantity: number;
+}
+
+export interface EFMigrationsHistory {
+  migrationId: string;
+  productVersion: string;
 }

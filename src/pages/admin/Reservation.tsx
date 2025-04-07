@@ -26,44 +26,54 @@ const formatDate = (dateStr: string) => {
 const mockReservations: ReservationType[] = [
   {
     id: '1',
+    userId: 'user1',
     customerId: 'cust1',
-    dateTime: '2025-04-10T18:30:00',
-    guests: 4,
+    reservationDate: '2025-04-10T18:30:00',
+    numberOfGuests: 4,
+    tableType: 'window',
     specialRequests: 'Window seat preferred',
     status: 'confirmed',
     createdAt: '2025-04-01T10:15:00'
   },
   {
     id: '2',
+    userId: 'user1',
     customerId: 'cust2',
-    dateTime: '2025-04-10T19:00:00',
-    guests: 2,
+    reservationDate: '2025-04-10T19:00:00',
+    numberOfGuests: 2,
+    tableType: 'regular',
     specialRequests: 'Anniversary dinner',
     status: 'pending',
     createdAt: '2025-04-02T09:20:00'
   },
   {
     id: '3',
+    userId: 'user2',
     customerId: 'cust3',
-    dateTime: '2025-04-11T20:15:00',
-    guests: 6,
+    reservationDate: '2025-04-11T20:15:00',
+    numberOfGuests: 6,
+    tableType: 'large',
     status: 'confirmed',
     createdAt: '2025-04-02T14:30:00'
   },
   {
     id: '4',
+    userId: 'user2',
     customerId: 'cust4',
-    dateTime: '2025-04-09T17:45:00',
-    guests: 3,
+    reservationDate: '2025-04-09T17:45:00',
+    numberOfGuests: 3,
+    tableType: 'regular',
     specialRequests: 'High chair needed',
     status: 'completed',
     createdAt: '2025-04-01T11:05:00'
   },
   {
     id: '5',
+    userId: 'user1',
     customerId: 'cust5',
-    dateTime: '2025-04-12T21:00:00',
-    guests: 8,
+    reservationDate: '2025-04-12T21:00:00',
+    numberOfGuests: 8,
+    tableType: 'private',
     specialRequests: 'Business dinner, private room if possible',
     status: 'cancelled',
     createdAt: '2025-04-03T16:45:00'
@@ -157,6 +167,7 @@ const ReservationPage = () => {
                       <TableHead>Customer</TableHead>
                       <TableHead>Date & Time</TableHead>
                       <TableHead>Guests</TableHead>
+                      <TableHead>Table Type</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -164,7 +175,7 @@ const ReservationPage = () => {
                   <TableBody>
                     {filteredReservations.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           No reservations found
                         </TableCell>
                       </TableRow>
@@ -182,8 +193,9 @@ const ReservationPage = () => {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>{formatDate(reservation.dateTime)}</TableCell>
-                          <TableCell>{reservation.guests} people</TableCell>
+                          <TableCell>{formatDate(reservation.reservationDate)}</TableCell>
+                          <TableCell>{reservation.numberOfGuests} people</TableCell>
+                          <TableCell>{reservation.tableType}</TableCell>
                           <TableCell>
                             <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(reservation.status)}`}>
                               {reservation.status.charAt(0).toUpperCase() + reservation.status.slice(1)}
