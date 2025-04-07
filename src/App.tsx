@@ -9,9 +9,9 @@ import PublicRoutes from "@/routes/PublicRoutes";
 import AdminRoutes from "@/routes/AdminRoutes";
 
 // Pages
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Home from "./pages/public/Home";
+import Login from "./pages/public/Login";
+import Register from "./pages/public/Register";
 import Menu from "./pages/Menu";
 import Reservations from "./pages/Reservations";
 import Dashboard from "./pages/admin/Dashboard";
@@ -31,7 +31,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Home />} />
             <Route element={<PublicRoutes />}>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
