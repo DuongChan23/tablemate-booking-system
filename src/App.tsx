@@ -4,6 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthContext";
+import PublicRoutes from "@/routes/PublicRoutes";
+import AdminRoutes from "@/routes/AdminRoutes";
+
+// Pages
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -19,24 +24,37 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/menu" element={<Menu />} />
-          <Route path="/reservations" element={<Reservations />} />
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/admin/customers" element={<CustomerList />} />
-          <Route path="/admin/menu" element={<MenuList />} />
-          <Route path="/admin/reservations" element={<ReservationPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={<Index />} />
+            <Route element={<PublicRoutes />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
+            
+            {/* Protected Routes (Require authentication) */}
+            <Route path="/menu" element={<Menu />} />
+            <Route path="/reservations" element={<Reservations />} />
+            
+            {/* Admin Routes */}
+            <Route element={<AdminRoutes />}>
+              <Route path="/admin" element={<Dashboard />} />
+              <Route path="/admin/customers" element={<CustomerList />} />
+              <Route path="/admin/menu" element={<MenuList />} />
+              <Route path="/admin/reservations" element={<ReservationPage />} />
+            </Route>
+            
+            {/* 404 Route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 
