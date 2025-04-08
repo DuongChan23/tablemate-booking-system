@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, History } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
@@ -24,6 +24,11 @@ const Navbar = () => {
             
             {isAuthenticated ? (
               <>
+                <Link to="/reservation-history" className="font-medium hover:text-tablemate-burgundy transition-colors flex items-center gap-1">
+                  <History className="h-4 w-4" />
+                  My Reservations
+                </Link>
+                
                 {isAdmin && (
                   <Link to="/admin" className="font-medium text-tablemate-burgundy hover:text-tablemate-burgundy/80 transition-colors">
                     Admin Dashboard
@@ -66,6 +71,11 @@ const Navbar = () => {
               
               {isAuthenticated ? (
                 <>
+                  <Link to="/reservation-history" className="font-medium hover:text-tablemate-burgundy transition-colors flex items-center gap-1">
+                    <History className="h-4 w-4" />
+                    My Reservations
+                  </Link>
+                  
                   {isAdmin && (
                     <Link 
                       to="/admin" 

@@ -14,6 +14,7 @@ import Login from "./pages/public/Login";
 import Register from "./pages/public/Register";
 import Menu from "./pages/Menu";
 import Reservations from "./pages/Reservations";
+import ReservationHistory from "./pages/ReservationHistory";
 import Dashboard from "./pages/admin/Dashboard";
 import CustomerList from "./pages/admin/CustomerList";
 import MenuList from "./pages/admin/MenuList";
@@ -40,6 +41,7 @@ const App = () => (
             {/* Protected Routes (Require authentication) */}
             <Route path="/menu" element={<Menu />} />
             <Route path="/reservations" element={<Reservations />} />
+            <Route path="/reservation-history" element={<ReservationHistory />} />
             
             {/* Admin Routes */}
             <Route element={<AdminRoutes />}>

@@ -45,7 +45,38 @@ const mockReservations: Reservation[] = [
     status: 'pending',
     createdAt: '2025-04-02T09:20:00'
   },
-  // ... more reservations would be here
+  {
+    id: '3',
+    userId: 'user2',
+    customerId: 'cust3',
+    reservationDate: '2025-04-11T20:15:00',
+    numberOfGuests: 6,
+    tableType: 'large',
+    status: 'confirmed',
+    createdAt: '2025-04-02T14:30:00'
+  },
+  {
+    id: '4',
+    userId: 'user2',
+    customerId: 'cust4',
+    reservationDate: '2025-04-09T17:45:00',
+    numberOfGuests: 3,
+    tableType: 'regular',
+    specialRequests: 'High chair needed',
+    status: 'completed',
+    createdAt: '2025-04-01T11:05:00'
+  },
+  {
+    id: '5',
+    userId: 'user1',
+    customerId: 'cust5',
+    reservationDate: '2025-04-12T21:00:00',
+    numberOfGuests: 8,
+    tableType: 'private',
+    specialRequests: 'Business dinner, private room if possible',
+    status: 'cancelled',
+    createdAt: '2025-04-03T16:45:00'
+  }
 ];
 
 // Mock customer data for demonstration
@@ -72,6 +103,11 @@ const reservationService = {
     return null;
   },
   
+  getUserReservations: async (userId: string) => {
+    // This would be an actual API call in production
+    return mockReservations.filter(res => res.userId === userId);
+  },
+  
   create: async (reservationData: Omit<Reservation, 'id' | 'createdAt'>) => {
     // This would be an actual API call in production
     const newReservation = {
@@ -79,14 +115,22 @@ const reservationService = {
       id: `res${Math.floor(Math.random() * 1000)}`,
       createdAt: new Date().toISOString()
     };
+    
+    // In a real app, this would add to the database
+    mockReservations.push(newReservation);
+    
     return newReservation;
   },
   
   update: async (id: string, reservationData: Partial<Reservation>) => {
     // This would be an actual API call in production
-    const reservation = mockReservations.find(r => r.id === id);
-    if (reservation) {
-      return { ...reservation, ...reservationData };
+    const reservationIndex = mockReservations.findIndex(r => r.id === id);
+    if (reservationIndex >= 0) {
+      mockReservations[reservationIndex] = { 
+        ...mockReservations[reservationIndex], 
+        ...reservationData 
+      };
+      return mockReservations[reservationIndex];
     }
     throw new Error('Reservation not found');
   },
