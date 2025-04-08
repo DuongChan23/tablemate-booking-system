@@ -17,7 +17,7 @@ const mockMenuItems: MenuItem[] = [
     price: 18,
     image: 'https://images.unsplash.com/photo-1606255557509-6ba258c2b5e2',
     category: 'starter',
-    available: true
+    isActive: true
   },
   {
     id: '2',
@@ -26,7 +26,7 @@ const mockMenuItems: MenuItem[] = [
     price: 42,
     image: 'https://images.unsplash.com/photo-1544025162-d76694265947',
     category: 'main',
-    available: true
+    isActive: true
   },
   {
     id: '3',
@@ -35,7 +35,7 @@ const mockMenuItems: MenuItem[] = [
     price: 14,
     image: 'https://images.unsplash.com/photo-1579306194872-64d3b7bac4c2',
     category: 'dessert',
-    available: true
+    isActive: true
   },
   {
     id: '4',
@@ -44,7 +44,7 @@ const mockMenuItems: MenuItem[] = [
     price: 14,
     image: 'https://images.unsplash.com/photo-1575023782549-62ca0d244b39',
     category: 'main',
-    available: false
+    isActive: false
   },
   {
     id: '5',
@@ -53,7 +53,7 @@ const mockMenuItems: MenuItem[] = [
     price: 28,
     image: 'https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a',
     category: 'main',
-    available: true
+    isActive: true
   }
 ];
 
@@ -143,11 +143,11 @@ const MenuList = () => {
                     <TableCell>${item.price.toFixed(2)}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 text-xs rounded-full ${
-                        item.available 
+                        item.isActive 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {item.available ? 'Available' : 'Unavailable'}
+                        {item.isActive ? 'Available' : 'Unavailable'}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">

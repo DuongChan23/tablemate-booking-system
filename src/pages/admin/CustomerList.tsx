@@ -12,58 +12,63 @@ import { Search, Plus, Edit, Trash } from 'lucide-react';
 const mockCustomers: Customer[] = [
   {
     id: '1',
-    userId: 'user1',
-    firstName: 'John',
-    lastName: 'Doe',
+    name: 'John Doe',
     email: 'john.doe@example.com',
     phone: '555-123-4567',
     address: '123 Main St, City',
     visits: 8,
-    status: 'active'
+    lastVisit: '2025-03-15T18:30:00',
+    totalSpent: 450.75,
+    status: 'active',
+    createdAt: '2025-01-01T00:00:00'
   },
   {
     id: '2',
-    userId: 'user2',
-    firstName: 'Jane',
-    lastName: 'Smith',
+    name: 'Jane Smith',
     email: 'jane.smith@example.com',
     phone: '555-987-6543',
     address: '456 Oak Dr, Town',
     visits: 12,
-    status: 'active'
+    lastVisit: '2025-03-28T20:15:00',
+    totalSpent: 725.50,
+    status: 'active',
+    createdAt: '2025-01-02T00:00:00'
   },
   {
     id: '3',
-    userId: 'user3',
-    firstName: 'Robert',
-    lastName: 'Johnson',
+    name: 'Robert Johnson',
     email: 'robert.johnson@example.com',
     phone: '555-555-5555',
     address: '789 Pine Ave, Village',
     visits: 3,
-    status: 'inactive'
+    lastVisit: '2025-03-10T19:45:00',
+    totalSpent: 150.25,
+    status: 'inactive',
+    createdAt: '2025-01-03T00:00:00'
   },
   {
     id: '4',
-    userId: 'user4',
-    firstName: 'Emily',
-    lastName: 'Williams',
+    name: 'Emily Williams',
     email: 'emily.williams@example.com',
     phone: '555-222-3333',
     address: '101 Cedar Ln, County',
     visits: 15,
-    status: 'active'
+    lastVisit: '2025-04-02T18:00:00',
+    totalSpent: 890.30,
+    status: 'active',
+    createdAt: '2025-01-04T00:00:00'
   },
   {
     id: '5',
-    userId: 'user5',
-    firstName: 'Michael',
-    lastName: 'Brown',
+    name: 'Michael Brown',
     email: 'michael.brown@example.com',
     phone: '555-777-8888',
     address: '202 Maple St, District',
     visits: 1,
-    status: 'active'
+    lastVisit: '2025-04-01T12:30:00',
+    totalSpent: 75.00,
+    status: 'active',
+    createdAt: '2025-01-05T00:00:00'
   }
 ];
 
@@ -72,8 +77,7 @@ const CustomerList = () => {
   const [customers] = useState<Customer[]>(mockCustomers);
 
   const filteredCustomers = customers.filter((customer) => 
-    customer.firstName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    customer.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     customer.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -125,7 +129,7 @@ const CustomerList = () => {
                 {filteredCustomers.map((customer) => (
                   <TableRow key={customer.id}>
                     <TableCell className="font-medium">
-                      {customer.firstName} {customer.lastName}
+                      {customer.name}
                     </TableCell>
                     <TableCell>{customer.email}</TableCell>
                     <TableCell>{customer.phone}</TableCell>
