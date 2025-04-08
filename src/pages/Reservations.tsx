@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -16,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import reservationService from '@/services/reservationService';
+import { Reservation } from '@/types';
 
 const tableTypes = [
   { value: "regular", label: "Regular Table" },
@@ -104,7 +104,7 @@ const Reservations = () => {
         numberOfGuests: parseInt(guests, 10),
         tableType,
         specialRequests: formData.specialRequests || undefined,
-        status: 'pending'
+        status: 'pending' as const  // Type assertion to ensure correct typing
       };
       
       // Create the reservation in our mock service
