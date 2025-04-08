@@ -2,10 +2,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const { isAuthenticated, isAdmin, logout } = useAuth();
 
   return (
     <header className="bg-white shadow-sm z-10 relative border-b">
@@ -19,10 +21,31 @@ const Navbar = () => {
             <Link to="/" className="font-medium hover:text-tablemate-burgundy transition-colors">Home</Link>
             <Link to="/menu" className="font-medium hover:text-tablemate-burgundy transition-colors">Menu</Link>
             <Link to="/reservations" className="font-medium hover:text-tablemate-burgundy transition-colors">Reservations</Link>
-            <Link to="/login" className="font-medium hover:text-tablemate-burgundy transition-colors">Login</Link>
-            <Link to="/register">
-              <Button className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90">Register</Button>
-            </Link>
+            
+            {isAuthenticated ? (
+              <>
+                {isAdmin && (
+                  <Link to="/admin" className="font-medium text-tablemate-burgundy hover:text-tablemate-burgundy/80 transition-colors">
+                    Admin Dashboard
+                  </Link>
+                )}
+                <Button 
+                  onClick={logout} 
+                  variant="outline" 
+                  className="border-tablemate-burgundy text-tablemate-burgundy hover:bg-tablemate-burgundy/10"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="font-medium hover:text-tablemate-burgundy transition-colors">Login</Link>
+                <Link to="/register">
+                  <Button className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90">Register</Button>
+                </Link>
+              </>
+            )}
           </nav>
 
           <button 
@@ -40,10 +63,34 @@ const Navbar = () => {
               <Link to="/" className="font-medium hover:text-tablemate-burgundy transition-colors">Home</Link>
               <Link to="/menu" className="font-medium hover:text-tablemate-burgundy transition-colors">Menu</Link>
               <Link to="/reservations" className="font-medium hover:text-tablemate-burgundy transition-colors">Reservations</Link>
-              <Link to="/login" className="font-medium hover:text-tablemate-burgundy transition-colors">Login</Link>
-              <Link to="/register">
-                <Button className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90 w-full">Register</Button>
-              </Link>
+              
+              {isAuthenticated ? (
+                <>
+                  {isAdmin && (
+                    <Link 
+                      to="/admin" 
+                      className="font-medium text-tablemate-burgundy hover:text-tablemate-burgundy/80 transition-colors"
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <Button 
+                    onClick={logout} 
+                    variant="outline" 
+                    className="border-tablemate-burgundy text-tablemate-burgundy hover:bg-tablemate-burgundy/10"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="font-medium hover:text-tablemate-burgundy transition-colors">Login</Link>
+                  <Link to="/register">
+                    <Button className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90 w-full">Register</Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
