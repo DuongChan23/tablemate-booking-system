@@ -9,8 +9,10 @@ import {
   Calendar,
   LogOut,
   Menu,
-  X
+  X,
+  Home
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -19,6 +21,7 @@ interface AdminLayoutProps {
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -27,7 +30,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   };
 
   const handleLogout = () => {
-    // In a real app, we would clear auth state here
+    logout();
     navigate('/login');
   };
 
@@ -35,7 +38,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
     { icon: Users, label: 'Customers', path: '/admin/customers' },
     { icon: UtensilsCrossed, label: 'Menu', path: '/admin/menu' },
-    { icon: Calendar, label: 'Reservations', path: '/admin/reservations' }
+    { icon: Calendar, label: 'Reservations', path: '/admin/reservations' },
+    { icon: Home, label: 'Visit Website', path: '/' }
   ];
 
   return (
