@@ -22,6 +22,15 @@ const mockMenuItems: MenuItem[] = [
     category: 'main',
     isActive: true
   },
+  {
+    id: '3',
+    name: 'Chocolate Soufflé',
+    description: 'Airy and light chocolate dessert served with vanilla ice cream.',
+    price: 14,
+    image: 'https://images.unsplash.com/photo-1579306194872-64d3b7bac4c2',
+    category: 'dessert',
+    isActive: true
+  },
   // ... more menu items would be here
 ];
 

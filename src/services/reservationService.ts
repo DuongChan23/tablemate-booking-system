@@ -1,6 +1,7 @@
 
 import api from './api';
 import { Reservation, ReservationMenuItem } from '@/types';
+import menuService from './menuService';
 
 // Mock reservation menu items for demonstration
 const mockReservationMenuItems: ReservationMenuItem[] = [
@@ -165,7 +166,18 @@ const reservationService = {
   },
   
   getReservationMenuItems: async (reservationId: string) => {
-    return mockReservationMenuItems.filter(item => item.reservationId === reservationId);
+    const items = mockReservationMenuItems.filter(item => item.reservationId === reservationId);
+    
+    // Fetch menu item details for each reservation menu item
+    const detailedItems = await Promise.all(items.map(async (item) => {
+      const menuItem = await menuService.getById(item.menuItemId);
+      return {
+        ...item,
+        menuItem
+      };
+    }));
+    
+    return detailedItems;
   }
 };
 
