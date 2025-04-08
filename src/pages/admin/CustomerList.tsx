@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +20,7 @@ const CustomerList = () => {
     email: '',
     phone: '',
     address: '',
-    status: 'active'
+    status: 'active' as 'active' | 'inactive'
   });
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -69,7 +68,7 @@ const CustomerList = () => {
         email: '',
         phone: '',
         address: '',
-        status: 'active'
+        status: 'active' as 'active' | 'inactive'
       });
     } catch (error) {
       console.error('Failed to add customer:', error);
@@ -281,13 +280,25 @@ const CustomerList = () => {
                   onChange={(e) => setNewCustomer({...newCustomer, address: e.target.value})}
                 />
               </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90">Add Customer</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+              <div className="grid gap-2">
+                <Label htmlFor="status">Status</Label>
+                <select
+                  id="status"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={newCustomer.status}
+                  onChange={(e) => setNewCustomer({...newCustomer, status: e.target.value as 'active' | 'inactive'})}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit" className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90">Add Customer</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
 
       {/* Edit Customer Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
@@ -342,7 +353,7 @@ const CustomerList = () => {
                     id="edit-status"
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     value={editingCustomer.status}
-                    onChange={(e) => setEditingCustomer({...editingCustomer, status: e.target.value})}
+                    onChange={(e) => setEditingCustomer({...editingCustomer, status: e.target.value as 'active' | 'inactive'})}
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
