@@ -5,8 +5,10 @@ import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import menuService from '@/services/menuService';
+import { MenuItem as GlobalMenuItem } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Define type for menu items
+// Define local type for menu items that matches how we use them in this component
 interface MenuItem {
   id: string | number;
   name: string;
@@ -38,12 +40,22 @@ const Menu = () => {
         setLoading(true);
         const allItems = await menuService.getAll();
         
+        // Map the items from the global type to our local type, converting price to string
+        const mappedItems = allItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          price: `$${item.price.toFixed(2)}`,
+          image: item.image || '',
+          category: item.category
+        }));
+        
         // Categorize the items
         const categorizedItems = {
-          starters: allItems.filter(item => item.category.toLowerCase() === 'starter' || item.category.toLowerCase() === 'appetizer'),
-          mains: allItems.filter(item => item.category.toLowerCase() === 'main' || item.category.toLowerCase() === 'main course'),
-          desserts: allItems.filter(item => item.category.toLowerCase() === 'dessert'),
-          drinks: allItems.filter(item => item.category.toLowerCase() === 'drink' || item.category.toLowerCase() === 'beverage')
+          starters: mappedItems.filter(item => item.category.toLowerCase() === 'starter' || item.category.toLowerCase() === 'appetizer'),
+          mains: mappedItems.filter(item => item.category.toLowerCase() === 'main' || item.category.toLowerCase() === 'main course'),
+          desserts: mappedItems.filter(item => item.category.toLowerCase() === 'dessert'),
+          drinks: mappedItems.filter(item => item.category.toLowerCase() === 'drink' || item.category.toLowerCase() === 'beverage')
         };
         
         setMenuItems(categorizedItems);
@@ -59,7 +71,25 @@ const Menu = () => {
 
   const renderMenuItems = (items: MenuItem[]) => {
     if (loading) {
-      return <div className="flex justify-center py-12">Loading menu items...</div>;
+      return (
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
+          {[1, 2, 3, 4].map((item) => (
+            <Card key={item} className="overflow-hidden flex flex-col md:flex-row">
+              <div className="md:w-1/3 h-48 md:h-auto">
+                <Skeleton className="w-full h-full" />
+              </div>
+              <div className="p-6 md:w-2/3">
+                <div className="flex justify-between items-start mb-2">
+                  <Skeleton className="h-6 w-32 mb-2" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            </Card>
+          ))}
+        </div>
+      );
     }
 
     if (items.length === 0) {
