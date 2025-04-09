@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,12 +6,18 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Reservation as ReservationType } from '@/types';
-import { Search, Plus, Edit, Trash, Check, X } from 'lucide-react';
+import { Search, Plus, Edit, Trash, Check, X, CalendarIcon, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import reservationService from '@/services/reservationService';
 import customerService from '@/services/customerService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format, addMinutes } from 'date-fns';
+import { z } from 'zod';
 
 // Format date string for display
 const formatDate = (dateStr: string) => {
@@ -37,6 +42,29 @@ const getStatusColor = (status: string) => {
   }
 };
 
+const phoneSchema = z.string().regex(/^0\d{9}$/, "Phone number must be 10 digits and start with 0");
+const emailSchema = z.string().email("Please enter a valid email address");
+
+const tableTypes = [
+  { value: "regular", label: "Regular Table" },
+  { value: "window", label: "Window Table" },
+  { value: "booth", label: "Booth" },
+  { value: "large", label: "Large Group Table" },
+  { value: "private", label: "Private Room" }
+];
+
+// Generate hours array (12pm - 10pm for restaurant hours)
+const hoursOptions = Array.from({ length: 11 }, (_, i) => {
+  const hour = i + 12; // Start from 12 (12pm)
+  return { value: String(hour), label: hour > 12 ? `${hour - 12}` : `${hour}` };
+});
+
+// Generate minutes array (00, 15, 30, 45)
+const minutesOptions = ["00", "15", "30", "45"].map(minute => ({ 
+  value: minute, 
+  label: minute 
+}));
+
 const ReservationPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -50,14 +78,23 @@ const ReservationPage = () => {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   
+  // Form state for new reservations - updated to match the user reservation form
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [hours, setHours] = useState<string>("19");
+  const [minutes, setMinutes] = useState<string>("00");
+  const [guests, setGuests] = useState<string>("2");
+  const [tableType, setTableType] = useState<string>("regular");
+  const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  
   const [newReservation, setNewReservation] = useState({
     userId: 'user1', // Default user ID
     customerId: '', 
     customerName: '',
+    firstName: '',
+    lastName: '',
     customerPhone: '',
-    reservationDate: '',
-    numberOfGuests: 2,
-    tableType: 'regular',
+    customerEmail: '',
     specialRequests: '',
     status: 'pending' as 'pending' | 'confirmed' | 'cancelled' | 'completed'
   });
@@ -111,16 +148,71 @@ const ReservationPage = () => {
       return reservation.status === activeTab;
     });
 
+  const validateForm = () => {
+    let isValid = true;
+    
+    // Validate phone
+    try {
+      phoneSchema.parse(newReservation.customerPhone);
+      setPhoneError(null);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setPhoneError(error.errors[0].message);
+        isValid = false;
+      }
+    }
+    
+    // Validate email
+    try {
+      emailSchema.parse(newReservation.customerEmail);
+      setEmailError(null);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setEmailError(error.errors[0].message);
+        isValid = false;
+      }
+    }
+    
+    return isValid;
+  };
+
+  const getReservationDateTime = () => {
+    if (!date) return null;
+    
+    const reservationDate = new Date(date);
+    reservationDate.setHours(parseInt(hours, 10));
+    reservationDate.setMinutes(parseInt(minutes, 10));
+    
+    return reservationDate;
+  };
+
   const handleNewReservationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    if (!date) {
+      toast({
+        title: "Missing information",
+        description: "Please select a date for the reservation.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
+      // Format the customer name from first and last name
+      const customerName = `${newReservation.firstName} ${newReservation.lastName}`;
+      
       // Check if customer exists
       let customerId = newReservation.customerId;
-      if (!customerId && newReservation.customerName) {
+      if (!customerId) {
         // Create a new customer if one doesn't exist
         const newCustomer = await customerService.create({
-          name: newReservation.customerName,
-          email: '',
+          name: customerName,
+          email: newReservation.customerEmail,
           phone: newReservation.customerPhone,
           address: '',
           status: 'active'
@@ -128,13 +220,16 @@ const ReservationPage = () => {
         customerId = newCustomer.id;
       }
 
+      const reservationDateTime = getReservationDateTime();
+      if (!reservationDateTime) return;
+
       // Create the reservation
       const reservationData = {
         userId: newReservation.userId,
         customerId: customerId,
-        reservationDate: newReservation.reservationDate,
-        numberOfGuests: newReservation.numberOfGuests,
-        tableType: newReservation.tableType,
+        reservationDate: reservationDateTime.toISOString(),
+        numberOfGuests: parseInt(guests, 10),
+        tableType: tableType,
         specialRequests: newReservation.specialRequests,
         status: newReservation.status
       };
@@ -144,7 +239,7 @@ const ReservationPage = () => {
       // Update the customers info
       setCustomers({
         ...customers,
-        [customerId]: { name: newReservation.customerName, phone: newReservation.customerPhone }
+        [customerId]: { name: customerName, phone: newReservation.customerPhone }
       });
       
       // Update the reservations list
@@ -160,13 +255,18 @@ const ReservationPage = () => {
         userId: 'user1',
         customerId: '',
         customerName: '',
+        firstName: '',
+        lastName: '',
         customerPhone: '',
-        reservationDate: '',
-        numberOfGuests: 2,
-        tableType: 'regular',
+        customerEmail: '',
         specialRequests: '',
         status: 'pending'
       });
+      setDate(undefined);
+      setHours("19");
+      setMinutes("00");
+      setGuests("2");
+      setTableType("regular");
       setIsAddDialogOpen(false);
     } catch (error) {
       console.error('Error creating reservation:', error);
@@ -443,108 +543,206 @@ const ReservationPage = () => {
         </Card>
       </div>
 
-      {/* Add Reservation Dialog */}
+      {/* Add Reservation Dialog - Updated to match user form */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
             <DialogTitle>Create New Reservation</DialogTitle>
             <DialogDescription>
               Fill in the details to create a new reservation.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleNewReservationSubmit}>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="customerName">Customer Name</Label>
-                <Input
-                  id="customerName"
-                  value={newReservation.customerName}
-                  onChange={(e) => setNewReservation({...newReservation, customerName: e.target.value})}
-                  required
-                />
+          <form onSubmit={handleNewReservationSubmit} className="space-y-6">
+            <div className="grid gap-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input 
+                    id="firstName" 
+                    name="firstName" 
+                    value={newReservation.firstName}
+                    onChange={(e) => setNewReservation({...newReservation, firstName: e.target.value})}
+                    required 
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input 
+                    id="lastName" 
+                    name="lastName" 
+                    value={newReservation.lastName}
+                    onChange={(e) => setNewReservation({...newReservation, lastName: e.target.value})}
+                    required 
+                  />
+                </div>
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="customerPhone">Customer Phone</Label>
-                <Input
-                  id="customerPhone"
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  value={newReservation.customerEmail}
+                  onChange={(e) => setNewReservation({...newReservation, customerEmail: e.target.value})}
+                  required 
+                />
+                {emailError && <p className="text-sm text-red-500">{emailError}</p>}
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input 
+                  id="phone" 
+                  name="phone" 
+                  type="tel" 
                   value={newReservation.customerPhone}
                   onChange={(e) => setNewReservation({...newReservation, customerPhone: e.target.value})}
-                  required
+                  required 
                 />
+                {phoneError && <p className="text-sm text-red-500">{phoneError}</p>}
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="reservationDate">Reservation Date & Time</Label>
-                <Input
-                  id="reservationDate"
-                  type="datetime-local"
-                  value={newReservation.reservationDate}
-                  onChange={(e) => setNewReservation({...newReservation, reservationDate: e.target.value})}
-                  required
-                />
+                <Label htmlFor="date">Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                      id="date"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date ? format(date, 'MMMM d, yyyy') : <span>Select a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      initialFocus
+                      disabled={(date) => {
+                        // Disable dates in the past
+                        return date < new Date(new Date().setHours(0, 0, 0, 0));
+                      }}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="numberOfGuests">Number of Guests</Label>
-                <Input
-                  id="numberOfGuests"
-                  type="number"
-                  min="1"
-                  value={newReservation.numberOfGuests}
-                  onChange={(e) => setNewReservation({...newReservation, numberOfGuests: parseInt(e.target.value)})}
-                  required
-                />
+                <Label>Time</Label>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <div className="grid grid-cols-2 gap-2 flex-1">
+                    <Select value={hours} onValueChange={setHours}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Hour" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {hoursOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <Select value={minutes} onValueChange={setMinutes}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Minute" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {minutesOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    {parseInt(hours) >= 12 ? 'PM' : 'AM'}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Our dinner service runs from 12:00 PM to 10:00 PM
+                </p>
               </div>
               
-              <div className="grid gap-2">
-                <Label htmlFor="tableType">Table Type</Label>
-                <select
-                  id="tableType"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={newReservation.tableType}
-                  onChange={(e) => setNewReservation({...newReservation, tableType: e.target.value})}
-                  required
-                >
-                  <option value="regular">Regular</option>
-                  <option value="window">Window</option>
-                  <option value="outdoor">Outdoor</option>
-                  <option value="private">Private</option>
-                  <option value="large">Large Group</option>
-                </select>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="guests">Number of Guests</Label>
+                  <Select value={guests} onValueChange={setGuests}>
+                    <SelectTrigger id="guests">
+                      <SelectValue placeholder="Select guests" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num} {num === 1 ? 'guest' : 'guests'}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="9+">9+ guests</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="tableType">Table Type</Label>
+                  <Select value={tableType} onValueChange={setTableType}>
+                    <SelectTrigger id="tableType">
+                      <SelectValue placeholder="Select table type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tableTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
               <div className="grid gap-2">
                 <Label htmlFor="specialRequests">Special Requests</Label>
-                <Input
-                  id="specialRequests"
+                <Textarea 
+                  id="specialRequests" 
+                  name="specialRequests" 
+                  rows={3}
                   value={newReservation.specialRequests}
                   onChange={(e) => setNewReservation({...newReservation, specialRequests: e.target.value})}
+                  placeholder="Please let us know if you have any special requirements or occasions to celebrate."
                 />
               </div>
               
               <div className="grid gap-2">
                 <Label htmlFor="status">Status</Label>
-                <select
-                  id="status"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={newReservation.status}
-                  onChange={(e) => setNewReservation({
-                    ...newReservation, 
-                    status: e.target.value as 'pending' | 'confirmed' | 'cancelled' | 'completed'
-                  })}
-                  required
+                <Select 
+                  value={newReservation.status} 
+                  onValueChange={(value: 'pending' | 'confirmed' | 'cancelled' | 'completed') => 
+                    setNewReservation({...newReservation, status: value})
+                  }
                 >
-                  <option value="pending">Pending</option>
-                  <option value="confirmed">Confirmed</option>
-                </select>
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90">
+              
+              <Button 
+                type="submit" 
+                className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90"
+              >
                 Create Reservation
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
