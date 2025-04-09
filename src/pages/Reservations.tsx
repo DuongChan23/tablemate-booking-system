@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,7 @@ const tableTypes = [
 const Reservations = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [hours, setHours] = useState<string>("19");
@@ -45,6 +46,24 @@ const Reservations = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [reservationDetails, setReservationDetails] = useState<any>(null);
+
+  // Auto-fill form data from user information when logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Split name into first and last name if available
+      const nameParts = user.firstName ? user.firstName.split(' ') : [''];
+      const firstName = nameParts[0] || '';
+      const lastName = user.lastName || '';
+      
+      setFormData({
+        firstName: firstName,
+        lastName: lastName,
+        email: user.email || '',
+        phone: '',  // We might not have this in the user object
+        specialRequests: ''
+      });
+    }
+  }, [isAuthenticated, user]);
 
   // Generate hours array (12pm - 10pm for restaurant hours)
   const hoursOptions = Array.from({ length: 11 }, (_, i) => {
@@ -201,13 +220,15 @@ const Reservations = () => {
                   </p>
                   
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button 
-                      variant="outline" 
-                      onClick={handleViewReservations} 
-                      className="flex-1"
-                    >
-                      View My Reservations
-                    </Button>
+                    {!isAdmin && (
+                      <Button 
+                        variant="outline" 
+                        onClick={handleViewReservations} 
+                        className="flex-1"
+                      >
+                        View My Reservations
+                      </Button>
+                    )}
                     <Button 
                       onClick={handleReset} 
                       className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90 flex-1"
@@ -398,7 +419,7 @@ const Reservations = () => {
                           {isLoading ? "Processing..." : "Reserve Table"}
                         </Button>
                         
-                        {user && (
+                        {isAuthenticated && !isAdmin && (
                           <Button 
                             type="button"
                             variant="outline"

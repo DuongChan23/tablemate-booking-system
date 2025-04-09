@@ -34,6 +34,16 @@ const mockMenuItems: MenuItem[] = [
   // ... more menu items would be here
 ];
 
+// Helper function to convert file to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
 const menuService = {
   getAll: async () => {
     // This would be an actual API call in production
@@ -44,26 +54,59 @@ const menuService = {
     return mockMenuItems.find(item => item.id === id);
   },
   
-  create: async (menuData: Omit<MenuItem, 'id'>) => {
+  create: async (menuData: Omit<MenuItem, 'id'>, imageFile?: File) => {
     // This would be an actual API call in production
+    let imageUrl = menuData.image;
+    
+    // If an image file is provided, convert it to base64
+    if (imageFile) {
+      try {
+        imageUrl = await fileToBase64(imageFile);
+      } catch (error) {
+        console.error("Error converting image file:", error);
+      }
+    }
+    
     const newItem = {
       ...menuData,
+      image: imageUrl,
       id: `item${Math.floor(Math.random() * 1000)}`,
     };
+    
+    // In a real app this would save to a database
+    mockMenuItems.push(newItem);
+    
     return newItem;
   },
   
-  update: async (id: string, menuData: Partial<MenuItem>) => {
+  update: async (id: string, menuData: Partial<MenuItem>, imageFile?: File) => {
     // This would be an actual API call in production
-    const item = mockMenuItems.find(i => i.id === id);
-    if (item) {
-      return { ...item, ...menuData };
+    let imageUrl = menuData.image;
+    
+    // If an image file is provided, convert it to base64
+    if (imageFile) {
+      try {
+        imageUrl = await fileToBase64(imageFile);
+        menuData.image = imageUrl;
+      } catch (error) {
+        console.error("Error converting image file:", error);
+      }
+    }
+    
+    const itemIndex = mockMenuItems.findIndex(i => i.id === id);
+    if (itemIndex >= 0) {
+      mockMenuItems[itemIndex] = { ...mockMenuItems[itemIndex], ...menuData };
+      return mockMenuItems[itemIndex];
     }
     throw new Error('Menu item not found');
   },
   
   delete: async (id: string) => {
     // This would be an actual API call in production
+    const itemIndex = mockMenuItems.findIndex(i => i.id === id);
+    if (itemIndex >= 0) {
+      mockMenuItems.splice(itemIndex, 1);
+    }
     return { success: true };
   }
 };

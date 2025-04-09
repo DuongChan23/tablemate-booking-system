@@ -1,12 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { MenuItem } from '@/types';
-import { Search, Plus, Edit, Trash } from 'lucide-react';
+import { Search, Plus, Edit, Trash, Upload, ImageIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
@@ -29,6 +29,13 @@ const MenuList = () => {
     isActive: true
   });
   const [editingMenuItem, setEditingMenuItem] = useState<MenuItem | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [editImagePreview, setEditImagePreview] = useState('');
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     const fetchMenuItems = async () => {
@@ -65,16 +72,40 @@ const MenuList = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean = false) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (isEdit) {
+          setEditImageFile(file);
+          setEditImagePreview(reader.result as string);
+          if (editingMenuItem) {
+            setEditingMenuItem({...editingMenuItem, image: reader.result as string});
+          }
+        } else {
+          setImageFile(file);
+          setImagePreview(reader.result as string);
+          setNewMenuItem({...newMenuItem, image: reader.result as string});
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddMenuItem = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await menuService.create(newMenuItem);
+      const response = await menuService.create(newMenuItem, imageFile || undefined);
       setMenuItems([...menuItems, response]);
       toast({
         title: "Success",
         description: "Menu item added successfully",
       });
       setIsAddDialogOpen(false);
+      setImageFile(null);
+      setImagePreview('');
       setNewMenuItem({
         name: '',
         description: '',
@@ -98,13 +129,15 @@ const MenuList = () => {
     if (!editingMenuItem) return;
     
     try {
-      const response = await menuService.update(editingMenuItem.id, editingMenuItem);
+      const response = await menuService.update(editingMenuItem.id, editingMenuItem, editImageFile || undefined);
       setMenuItems(menuItems.map(item => item.id === response.id ? response : item));
       toast({
         title: "Success",
         description: "Menu item updated successfully",
       });
       setIsEditDialogOpen(false);
+      setEditImageFile(null);
+      setEditImagePreview('');
     } catch (error) {
       console.error('Failed to update menu item:', error);
       toast({
@@ -232,6 +265,7 @@ const MenuList = () => {
                               size="icon"
                               onClick={() => {
                                 setEditingMenuItem(item);
+                                setEditImagePreview(item.image || '');
                                 setIsEditDialogOpen(true);
                               }}
                             >
@@ -316,12 +350,41 @@ const MenuList = () => {
                 </select>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="image">Image URL</Label>
-                <Input
-                  id="image"
-                  value={newMenuItem.image}
-                  onChange={(e) => setNewMenuItem({...newMenuItem, image: e.target.value})}
-                />
+                <Label htmlFor="image">Image</Label>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      ref={fileInputRef}
+                      onChange={(e) => handleImageChange(e)}
+                    />
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload Image
+                    </Button>
+                  </div>
+                  
+                  {imagePreview ? (
+                    <div className="relative aspect-square w-full max-h-[200px] overflow-hidden rounded-md border">
+                      <img 
+                        src={imagePreview} 
+                        alt="Preview" 
+                        className="h-full w-full object-cover" 
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex justify-center items-center aspect-square w-full max-h-[200px] rounded-md border bg-muted">
+                      <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <input
@@ -398,12 +461,41 @@ const MenuList = () => {
                   </select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="edit-image">Image URL</Label>
-                  <Input
-                    id="edit-image"
-                    value={editingMenuItem.image}
-                    onChange={(e) => setEditingMenuItem({...editingMenuItem, image: e.target.value})}
-                  />
+                  <Label htmlFor="edit-image">Image</Label>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        ref={editFileInputRef}
+                        onChange={(e) => handleImageChange(e, true)}
+                      />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => editFileInputRef.current?.click()}
+                        className="w-full"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload New Image
+                      </Button>
+                    </div>
+                    
+                    {editImagePreview ? (
+                      <div className="relative aspect-square w-full max-h-[200px] overflow-hidden rounded-md border">
+                        <img 
+                          src={editImagePreview} 
+                          alt="Preview" 
+                          className="h-full w-full object-cover" 
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex justify-center items-center aspect-square w-full max-h-[200px] rounded-md border bg-muted">
+                        <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <input

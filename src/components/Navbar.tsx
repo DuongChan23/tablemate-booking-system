@@ -24,10 +24,12 @@ const Navbar = () => {
             
             {isAuthenticated ? (
               <>
-                <Link to="/reservation-history" className="font-medium hover:text-tablemate-burgundy transition-colors flex items-center gap-1">
-                  <History className="h-4 w-4" />
-                  My Reservations
-                </Link>
+                {!isAdmin && (
+                  <Link to="/reservation-history" className="font-medium hover:text-tablemate-burgundy transition-colors flex items-center gap-1">
+                    <History className="h-4 w-4" />
+                    My Reservations
+                  </Link>
+                )}
                 
                 {isAdmin && (
                   <Link to="/admin" className="font-medium text-tablemate-burgundy hover:text-tablemate-burgundy/80 transition-colors">
@@ -71,10 +73,12 @@ const Navbar = () => {
               
               {isAuthenticated ? (
                 <>
-                  <Link to="/reservation-history" className="font-medium hover:text-tablemate-burgundy transition-colors flex items-center gap-1">
-                    <History className="h-4 w-4" />
-                    My Reservations
-                  </Link>
+                  {!isAdmin && (
+                    <Link to="/reservation-history" className="font-medium hover:text-tablemate-burgundy transition-colors flex items-center gap-1">
+                      <History className="h-4 w-4" />
+                      My Reservations
+                    </Link>
+                  )}
                   
                   {isAdmin && (
                     <Link 
