@@ -29,7 +29,7 @@ const tableTypes = [
 const Reservations = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAdmin } = useAuth();
   
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [hours, setHours] = useState<string>("19");
