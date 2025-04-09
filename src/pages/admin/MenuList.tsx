@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,6 +39,7 @@ const MenuList = () => {
   React.useEffect(() => {
     const fetchMenuItems = async () => {
       try {
+        setIsLoading(true);
         const data = await menuService.getAll();
         setMenuItems(data);
       } catch (error) {
@@ -98,7 +98,16 @@ const MenuList = () => {
     e.preventDefault();
     try {
       const response = await menuService.create(newMenuItem, imageFile || undefined);
-      setMenuItems([...menuItems, response]);
+      // Add the new item to the menuItems state without causing duplicate items
+      setMenuItems(prevItems => {
+        // Check if the item already exists in the array to prevent duplicates
+        const itemExists = prevItems.some(item => item.id === response.id);
+        if (itemExists) {
+          return prevItems;
+        }
+        return [...prevItems, response];
+      });
+      
       toast({
         title: "Success",
         description: "Menu item added successfully",

@@ -67,10 +67,15 @@ const menuService = {
       }
     }
     
+    const newItemId = `item${Math.floor(Math.random() * 1000)}`;
+    
+    // Check if an item with this id already exists to prevent duplicates
+    const idExists = mockMenuItems.some(item => item.id === newItemId);
+    
     const newItem = {
       ...menuData,
       image: imageUrl,
-      id: `item${Math.floor(Math.random() * 1000)}`,
+      id: idExists ? `item${Math.floor(Math.random() * 1000000)}` : newItemId, // Ensure unique ID
     };
     
     // In a real app this would save to a database
