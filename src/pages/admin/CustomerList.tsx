@@ -6,27 +6,67 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Customer } from '@/types';
 import { Search, Plus, Edit, Trash } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import customerService from '@/services/customerService';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+
+// Add validation schema
+const customerSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  phone: z.string().regex(/^0\d{9}$/, {
+    message: "Phone number must be 10 digits and start with 0",
+  }),
+  address: z.string().optional(),
+  status: z.enum(["active", "inactive"])
+});
+
+type CustomerFormValues = z.infer<typeof customerSchema>;
 
 const CustomerList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newCustomer, setNewCustomer] = useState({
+  const [newCustomer, setNewCustomer] = useState<Omit<Customer, 'id' | 'createdAt' | 'visits' | 'totalSpent'>>({
     name: '',
     email: '',
     phone: '',
     address: '',
-    status: 'active' as 'active' | 'inactive'
+    status: 'active'
   });
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
+  
+  // Add form hooks for add and edit forms
+  const addForm = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      status: 'active'
+    }
+  });
+  
+  const editForm = useForm<CustomerFormValues>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      address: '',
+      status: 'active'
+    }
+  });
 
   React.useEffect(() => {
     const fetchCustomers = async () => {
@@ -53,23 +93,25 @@ const CustomerList = () => {
     customer.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddCustomer = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Update form handlers
+  const handleAddCustomer = async (values: CustomerFormValues) => {
     try {
-      const response = await customerService.create(newCustomer);
+      const customerData = {
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        address: values.address || '',
+        status: values.status
+      };
+      
+      const response = await customerService.create(customerData);
       setCustomers([...customers, response]);
       toast({
         title: "Success",
         description: "Customer added successfully",
       });
       setIsAddDialogOpen(false);
-      setNewCustomer({
-        name: '',
-        email: '',
-        phone: '',
-        address: '',
-        status: 'active' as 'active' | 'inactive'
-      });
+      addForm.reset();
     } catch (error) {
       console.error('Failed to add customer:', error);
       toast({
@@ -80,12 +122,20 @@ const CustomerList = () => {
     }
   };
 
-  const handleEditCustomer = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleEditCustomer = async (values: CustomerFormValues) => {
     if (!editingCustomer) return;
     
     try {
-      const response = await customerService.update(editingCustomer.id, editingCustomer);
+      const customerData = {
+        ...editingCustomer,
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        address: values.address || '',
+        status: values.status
+      };
+      
+      const response = await customerService.update(editingCustomer.id, customerData);
       setCustomers(customers.map(c => c.id === response.id ? response : c));
       toast({
         title: "Success",
@@ -100,6 +150,19 @@ const CustomerList = () => {
         variant: "destructive",
       });
     }
+  };
+  
+  // Update when opening edit dialog to set form values
+  const openEditDialog = (customer: Customer) => {
+    setEditingCustomer(customer);
+    editForm.reset({
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      address: customer.address || '',
+      status: customer.status
+    });
+    setIsEditDialogOpen(true);
   };
 
   const handleDeleteCustomer = async () => {
@@ -205,10 +268,7 @@ const CustomerList = () => {
                             <Button 
                               variant="ghost" 
                               size="icon"
-                              onClick={() => {
-                                setEditingCustomer(customer);
-                                setIsEditDialogOpen(true);
-                              }}
+                              onClick={() => openEditDialog(customer)}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -234,7 +294,7 @@ const CustomerList = () => {
         </Card>
       </div>
 
-      {/* Add Customer Dialog */}
+      {/* Add Customer Dialog - Updated with form validation */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -243,64 +303,94 @@ const CustomerList = () => {
               Fill in the customer details below to add a new customer.
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleAddCustomer}>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={newCustomer.name}
-                  onChange={(e) => setNewCustomer({...newCustomer, name: e.target.value})}
-                  required
+          <Form {...addForm}>
+            <form onSubmit={addForm.handleSubmit(handleAddCustomer)}>
+              <div className="grid gap-4 py-4">
+                <FormField
+                  control={addForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newCustomer.email}
-                  onChange={(e) => setNewCustomer({...newCustomer, email: e.target.value})}
-                  required
+                
+                <FormField
+                  control={addForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="email" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={newCustomer.phone}
-                  onChange={(e) => setNewCustomer({...newCustomer, phone: e.target.value})}
+                
+                <FormField
+                  control={addForm.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="tel" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  value={newCustomer.address}
-                  onChange={(e) => setNewCustomer({...newCustomer, address: e.target.value})}
+                
+                <FormField
+                  control={addForm.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <select
-                  id="status"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={newCustomer.status}
-                  onChange={(e) => setNewCustomer({...newCustomer, status: e.target.value as 'active' | 'inactive'})}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
+                
+                <FormField
+                  control={addForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <FormControl>
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          {...field}
+                        >
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               <DialogFooter>
                 <Button type="submit" className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90">Add Customer</Button>
               </DialogFooter>
             </form>
-          </DialogContent>
-        </Dialog>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
-      {/* Edit Customer Dialog */}
+      {/* Edit Customer Dialog - Updated with form validation */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -309,66 +399,94 @@ const CustomerList = () => {
               Update the customer details below.
             </DialogDescription>
           </DialogHeader>
-          {editingCustomer && (
-            <form onSubmit={handleEditCustomer}>
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(handleEditCustomer)}>
               <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-name">Name</Label>
-                  <Input
-                    id="edit-name"
-                    value={editingCustomer.name}
-                    onChange={(e) => setEditingCustomer({...editingCustomer, name: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-email">Email</Label>
-                  <Input
-                    id="edit-email"
-                    type="email"
-                    value={editingCustomer.email}
-                    onChange={(e) => setEditingCustomer({...editingCustomer, email: e.target.value})}
-                    required
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-phone">Phone</Label>
-                  <Input
-                    id="edit-phone"
-                    value={editingCustomer.phone}
-                    onChange={(e) => setEditingCustomer({...editingCustomer, phone: e.target.value})}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-address">Address</Label>
-                  <Input
-                    id="edit-address"
-                    value={editingCustomer.address}
-                    onChange={(e) => setEditingCustomer({...editingCustomer, address: e.target.value})}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="edit-status">Status</Label>
-                  <select
-                    id="edit-status"
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    value={editingCustomer.status}
-                    onChange={(e) => setEditingCustomer({...editingCustomer, status: e.target.value as 'active' | 'inactive'})}
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
+                <FormField
+                  control={editForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="email" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editForm.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="tel" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editForm.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editForm.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <FormControl>
+                        <select
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          {...field}
+                        >
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               <DialogFooter>
                 <Button type="submit" className="bg-tablemate-burgundy hover:bg-tablemate-burgundy/90">Update Customer</Button>
               </DialogFooter>
             </form>
-          )}
+          </Form>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Customer Confirmation Dialog */}
+      {/* Delete Customer Confirmation Dialog - Keep as is */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
