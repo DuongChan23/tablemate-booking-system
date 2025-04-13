@@ -9,8 +9,6 @@ const mockUsers: User[] = [
     name: 'Admin User',
     email: 'admin@tablemate.com',
     passwordHash: 'hashed_password_here',
-    phone: '555-123-4567',
-    address: '123 Admin St, City',
     role: 'admin',
     createdAt: '2025-01-01T00:00:00'
   },
@@ -19,8 +17,6 @@ const mockUsers: User[] = [
     name: 'Regular User',
     email: 'user@example.com',
     passwordHash: 'hashed_password_here',
-    phone: '555-987-6543',
-    address: '456 User Ave, Town',
     role: 'user',
     createdAt: '2025-01-02T00:00:00'
   }

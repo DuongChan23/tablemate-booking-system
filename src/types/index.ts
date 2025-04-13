@@ -10,11 +10,12 @@ export interface User {
 
 export interface Customer {
   id: string;
-  userId: string; // Added userId field to match database diagram
+  userId: string;
   name: string;
   email: string;
   phone: string;
   createdAt: string;
+  status?: 'active' | 'inactive'; // Adding status field that's used in UI
 }
 
 export interface MenuItem {
@@ -22,9 +23,9 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
-  image?: string; // Keeping image as optional since it's not in DB schema but useful for UI
-  category: string; // Keeping category for UI organization
-  isActive: boolean; // Keeping this for filtering active menu items
+  image?: string;
+  category: string;
+  isActive: boolean;
 }
 
 export interface Reservation {
@@ -37,7 +38,7 @@ export interface Reservation {
   specialRequests?: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   createdAt: string;
-  rowVersion?: string; // Added rowVersion as optional to match schema
+  rowVersion?: string;
   menuItems?: ReservationMenuItem[];
 }
 

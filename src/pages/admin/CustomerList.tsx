@@ -22,7 +22,6 @@ const customerSchema = z.object({
   phone: z.string().regex(/^0\d{9}$/, {
     message: "Phone number must be 10 digits and start with 0",
   }),
-  address: z.string().optional(),
   status: z.enum(["active", "inactive"])
 });
 
@@ -32,11 +31,11 @@ const CustomerList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [newCustomer, setNewCustomer] = useState<Omit<Customer, 'id' | 'createdAt' | 'visits' | 'totalSpent'>>({
+  const [newCustomer, setNewCustomer] = useState<Omit<Customer, 'id' | 'createdAt'>>({
+    userId: 'user1', // Default userId for new customers
     name: '',
     email: '',
     phone: '',
-    address: '',
     status: 'active'
   });
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
@@ -52,7 +51,6 @@ const CustomerList = () => {
       name: '',
       email: '',
       phone: '',
-      address: '',
       status: 'active'
     }
   });
@@ -63,7 +61,6 @@ const CustomerList = () => {
       name: '',
       email: '',
       phone: '',
-      address: '',
       status: 'active'
     }
   });
@@ -97,10 +94,10 @@ const CustomerList = () => {
   const handleAddCustomer = async (values: CustomerFormValues) => {
     try {
       const customerData = {
+        userId: 'user1', // Default userId for new customers
         name: values.name,
         email: values.email,
         phone: values.phone,
-        address: values.address || '',
         status: values.status
       };
       
@@ -131,7 +128,6 @@ const CustomerList = () => {
         name: values.name,
         email: values.email,
         phone: values.phone,
-        address: values.address || '',
         status: values.status
       };
       
@@ -159,8 +155,7 @@ const CustomerList = () => {
       name: customer.name,
       email: customer.email,
       phone: customer.phone,
-      address: customer.address || '',
-      status: customer.status
+      status: customer.status || 'active' // Default to active if status is undefined
     });
     setIsEditDialogOpen(true);
   };
@@ -233,7 +228,7 @@ const CustomerList = () => {
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
-                    <TableHead>Visits</TableHead>
+                    <TableHead>User ID</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -253,14 +248,14 @@ const CustomerList = () => {
                         </TableCell>
                         <TableCell>{customer.email}</TableCell>
                         <TableCell>{customer.phone}</TableCell>
-                        <TableCell>{customer.visits}</TableCell>
+                        <TableCell>{customer.userId}</TableCell>
                         <TableCell>
                           <span className={`px-2 py-1 text-xs rounded-full ${
                             customer.status === 'active' 
                               ? 'bg-green-100 text-green-800' 
                               : 'bg-gray-100 text-gray-800'
                           }`}>
-                            {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
+                            {(customer.status || 'active').charAt(0).toUpperCase() + (customer.status || 'active').slice(1)}
                           </span>
                         </TableCell>
                         <TableCell className="text-right">
@@ -350,20 +345,6 @@ const CustomerList = () => {
                 
                 <FormField
                   control={addForm.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={addForm.control}
                   name="status"
                   render={({ field }) => (
                     <FormItem>
@@ -438,20 +419,6 @@ const CustomerList = () => {
                       <FormLabel>Phone</FormLabel>
                       <FormControl>
                         <Input {...field} type="tel" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

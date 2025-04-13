@@ -10,7 +10,8 @@ const mockCustomers: Customer[] = [
     name: 'John Doe',
     email: 'john.doe@example.com',
     phone: '555-123-4567',
-    createdAt: '2025-01-01T00:00:00'
+    createdAt: '2025-01-01T00:00:00',
+    status: 'active'
   },
   {
     id: '2',
@@ -18,7 +19,8 @@ const mockCustomers: Customer[] = [
     name: 'Jane Smith',
     email: 'jane.smith@example.com',
     phone: '555-987-6543',
-    createdAt: '2025-01-02T00:00:00'
+    createdAt: '2025-01-02T00:00:00',
+    status: 'active'
   },
   {
     id: '3',
@@ -26,7 +28,8 @@ const mockCustomers: Customer[] = [
     name: 'Robert Johnson',
     email: 'robert.johnson@example.com',
     phone: '555-555-5555',
-    createdAt: '2025-01-15T00:00:00'
+    createdAt: '2025-01-15T00:00:00',
+    status: 'inactive'
   },
   {
     id: '4',
@@ -34,7 +37,8 @@ const mockCustomers: Customer[] = [
     name: 'Emily Williams',
     email: 'emily.williams@example.com',
     phone: '555-222-3333',
-    createdAt: '2025-02-18T00:00:00'
+    createdAt: '2025-02-18T00:00:00',
+    status: 'active'
   },
   {
     id: '5',
@@ -42,7 +46,8 @@ const mockCustomers: Customer[] = [
     name: 'Michael Brown',
     email: 'michael.brown@example.com',
     phone: '555-777-8888',
-    createdAt: '2025-01-10T00:00:00'
+    createdAt: '2025-01-10T00:00:00',
+    status: 'active'
   }
 ];
 
