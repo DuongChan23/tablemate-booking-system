@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -7,9 +8,10 @@ import menuService from '@/services/menuService';
 import { MenuItem } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Define a local interface that extends the global MenuItem but with price as string for display
+// Define a local interface that extends MenuItem but with price as string for display
 interface MenuItemDisplay extends Omit<MenuItem, 'price'> {
   price: string;
+  // isActive is already included from MenuItem
 }
 
 const Menu = () => {
@@ -42,7 +44,7 @@ const Menu = () => {
           price: `$${item.price.toFixed(2)}`,
           image: item.image || '',
           category: item.category,
-          isActive: item.isActive
+          isActive: item.isActive // Ensure isActive is included
         }));
         
         // Categorize the items
