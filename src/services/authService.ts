@@ -12,7 +12,7 @@ export interface RegisterData {
   firstName: string;
   lastName: string;
   phone?: string;
-  role?: 'admin' | 'user'; // Added explicit role field matching the backend
+  role?: 'admin' | 'user';
 }
 
 export interface AuthResponse {
@@ -27,36 +27,24 @@ export interface AuthResponse {
 }
 
 const authService = {
-  login: async (credentials: LoginCredentials) => {
-    // This would be an actual API call in production
-    // For now, simulate a successful login with mock data
-    // In real implementation, this would call /api/auth/login
-    return {
-      token: 'mock_token_12345',
-      user: {
-        id: '1',
-        email: credentials.email,
-        firstName: 'Admin',
-        lastName: 'User',
-        role: 'admin' as const
-      }
-    };
+  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
+    const response = await api.post('/auth/login', credentials);
+    
+    // Store token and user data in localStorage
+    localStorage.setItem('auth_token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    
+    return response.data;
   },
   
-  register: async (data: RegisterData) => {
-    // This would be an actual API call in production
-    // For now, simulate a successful registration
-    // In real implementation, this would call /api/auth/register
-    return {
-      token: 'mock_token_12345',
-      user: {
-        id: '1',
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        role: data.role || 'user' as const
-      }
-    };
+  register: async (data: RegisterData): Promise<AuthResponse> => {
+    const response = await api.post('/auth/register', data);
+    
+    // Store token and user data in localStorage
+    localStorage.setItem('auth_token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    
+    return response.data;
   },
   
   logout: () => {

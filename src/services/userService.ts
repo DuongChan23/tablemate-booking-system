@@ -2,59 +2,29 @@
 import api from './api';
 import { User } from '@/types';
 
-// Mock users for demonstration
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'Admin User',
-    email: 'admin@tablemate.com',
-    passwordHash: 'hashed_password_here',
-    role: 'admin',
-    createdAt: '2025-01-01T00:00:00',
-    phone: '+1-555-123-4567' // Added phone
-  },
-  {
-    id: '2',
-    name: 'Regular User',
-    email: 'user@example.com',
-    passwordHash: 'hashed_password_here',
-    role: 'user',
-    createdAt: '2025-01-02T00:00:00',
-    phone: '+1-555-987-6543' // Added phone
-  }
-];
-
 const userService = {
-  getAll: async () => {
-    // This would be an actual API call in production
-    return mockUsers;
+  getAll: async (): Promise<User[]> => {
+    const response = await api.get('/user');
+    return response.data;
   },
   
-  getById: async (id: string) => {
-    return mockUsers.find(user => user.id === id);
+  getById: async (id: string): Promise<User> => {
+    const response = await api.get(`/user/${id}`);
+    return response.data;
   },
   
-  create: async (userData: Omit<User, 'id' | 'createdAt'>) => {
-    // This would be an actual API call in production
-    const newUser = {
-      ...userData,
-      id: `user${Math.floor(Math.random() * 1000)}`,
-      createdAt: new Date().toISOString()
-    };
-    return newUser;
+  create: async (userData: Omit<User, 'id' | 'createdAt'>): Promise<User> => {
+    const response = await api.post('/user', userData);
+    return response.data;
   },
   
-  update: async (id: string, userData: Partial<User>) => {
-    // This would be an actual API call in production
-    const user = mockUsers.find(u => u.id === id);
-    if (user) {
-      return { ...user, ...userData };
-    }
-    throw new Error('User not found');
+  update: async (id: string, userData: Partial<User>): Promise<User> => {
+    const response = await api.put(`/user/${id}`, userData);
+    return response.data;
   },
   
-  delete: async (id: string) => {
-    // This would be an actual API call in production
+  delete: async (id: string): Promise<{ success: boolean }> => {
+    await api.delete(`/user/${id}`);
     return { success: true };
   }
 };

@@ -2,121 +2,41 @@
 import api from './api';
 import { Customer } from '@/types';
 
-// Mock customers data for demonstration
-const mockCustomers: Customer[] = [
-  {
-    id: '1',
-    userId: 'user1',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '555-123-4567',
-    createdAt: '2025-01-01T00:00:00',
-    status: 'active',
-    address: '123 Main St, Anytown',
-    visits: 5,
-    totalSpent: 450.75
-  },
-  {
-    id: '2',
-    userId: 'user1',
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
-    phone: '555-987-6543',
-    createdAt: '2025-01-02T00:00:00',
-    status: 'active',
-    address: '456 Oak Ave, Somewhere',
-    visits: 3,
-    totalSpent: 220.50
-  },
-  {
-    id: '3',
-    userId: 'user2',
-    name: 'Robert Johnson',
-    email: 'robert.johnson@example.com',
-    phone: '555-555-5555',
-    createdAt: '2025-01-15T00:00:00',
-    status: 'inactive',
-    address: '789 Pine St, Nowhere',
-    visits: 1,
-    totalSpent: 75.20
-  },
-  {
-    id: '4',
-    userId: 'user2',
-    name: 'Emily Williams',
-    email: 'emily.williams@example.com',
-    phone: '555-222-3333',
-    createdAt: '2025-02-18T00:00:00',
-    status: 'active',
-    address: '321 Elm Dr, Elsewhere',
-    visits: 7,
-    totalSpent: 620.90
-  },
-  {
-    id: '5',
-    userId: 'user1',
-    name: 'Michael Brown',
-    email: 'michael.brown@example.com',
-    phone: '555-777-8888',
-    createdAt: '2025-01-10T00:00:00',
-    status: 'active',
-    address: '654 Maple Ln, Anywhere',
-    visits: 2,
-    totalSpent: 180.25
-  }
-];
-
 const customerService = {
-  getAll: async () => {
-    // This would be an actual API call in production
-    return mockCustomers;
+  getAll: async (): Promise<Customer[]> => {
+    const response = await api.get('/customers');
+    return response.data;
   },
   
-  getById: async (id: string) => {
-    return mockCustomers.find(customer => customer.id === id);
+  getById: async (id: string): Promise<Customer> => {
+    const response = await api.get(`/customers/${id}`);
+    return response.data;
   },
   
-  getByEmail: async (email: string) => {
-    return mockCustomers.find(customer => customer.email === email);
+  getByEmail: async (email: string): Promise<Customer> => {
+    const allCustomers = await customerService.getAll();
+    return allCustomers.find(customer => customer.email === email);
   },
   
-  getByUserId: async (userId: string) => {
-    return mockCustomers.filter(customer => customer.userId === userId);
+  getByUserId: async (userId: string): Promise<Customer[]> => {
+    // The API doesn't seem to have a direct endpoint for this,
+    // so we'll filter from all customers
+    const allCustomers = await customerService.getAll();
+    return allCustomers.filter(customer => customer.userId === userId);
   },
   
-  create: async (customerData: Omit<Customer, 'id' | 'createdAt'>) => {
-    // This would be an actual API call in production
-    const newCustomer = {
-      ...customerData,
-      id: `cust${Math.floor(Math.random() * 1000)}`,
-      createdAt: new Date().toISOString()
-    };
-    
-    // In a real app this would add to the database
-    mockCustomers.push(newCustomer);
-    
-    return newCustomer;
+  create: async (customerData: Omit<Customer, 'id' | 'createdAt'>): Promise<Customer> => {
+    const response = await api.post('/customers', customerData);
+    return response.data;
   },
   
-  update: async (id: string, customerData: Partial<Customer>) => {
-    // This would be an actual API call in production
-    const customerIndex = mockCustomers.findIndex(c => c.id === id);
-    if (customerIndex >= 0) {
-      mockCustomers[customerIndex] = { 
-        ...mockCustomers[customerIndex], 
-        ...customerData 
-      };
-      return mockCustomers[customerIndex];
-    }
-    throw new Error('Customer not found');
+  update: async (id: string, customerData: Partial<Customer>): Promise<Customer> => {
+    const response = await api.put(`/customers/${id}`, customerData);
+    return response.data;
   },
   
-  delete: async (id: string) => {
-    // This would be an actual API call in production
-    const customerIndex = mockCustomers.findIndex(c => c.id === id);
-    if (customerIndex >= 0) {
-      mockCustomers.splice(customerIndex, 1);
-    }
+  delete: async (id: string): Promise<{ success: boolean }> => {
+    await api.delete(`/customers/${id}`);
     return { success: true };
   }
 };
