@@ -1,31 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import menuService from '@/services/menuService';
-import { MenuItem as GlobalMenuItem } from '@/types';
+import { MenuItem } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// Define local type for menu items that matches how we use them in this component
-interface MenuItem {
-  id: string | number;
-  name: string;
-  description: string;
+// Define a local interface that extends the global MenuItem but with price as string for display
+interface MenuItemDisplay extends Omit<MenuItem, 'price'> {
   price: string;
-  image: string;
-  category: string;
-  isActive: boolean;
 }
 
 const Menu = () => {
   const [activeTab, setActiveTab] = useState('starters');
   const [menuItems, setMenuItems] = useState<{
-    starters: MenuItem[];
-    mains: MenuItem[];
-    desserts: MenuItem[];
-    drinks: MenuItem[];
+    starters: MenuItemDisplay[];
+    mains: MenuItemDisplay[];
+    desserts: MenuItemDisplay[];
+    drinks: MenuItemDisplay[];
   }>({
     starters: [],
     mains: [],
@@ -41,14 +34,15 @@ const Menu = () => {
         setLoading(true);
         const allItems = await menuService.getAll();
         
-        // Map the items from the global type to our local type, converting price to string
-        const mappedItems = allItems.map(item => ({
+        // Map the items from the global type to our local display type, converting price to string
+        const mappedItems: MenuItemDisplay[] = allItems.map(item => ({
           id: item.id,
           name: item.name,
           description: item.description,
           price: `$${item.price.toFixed(2)}`,
           image: item.image || '',
-          category: item.category
+          category: item.category,
+          isActive: item.isActive
         }));
         
         // Categorize the items
@@ -70,7 +64,7 @@ const Menu = () => {
     fetchMenuItems();
   }, []);
 
-  const renderMenuItems = (items: MenuItem[]) => {
+  const renderMenuItems = (items: MenuItemDisplay[]) => {
     if (loading) {
       return (
         <div className="grid md:grid-cols-2 gap-6 mt-6">
