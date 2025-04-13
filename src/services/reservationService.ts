@@ -1,104 +1,88 @@
 
 import api from './api';
 import { Reservation, ReservationMenuItem } from '@/types';
-import menuService from './menuService';
-import customerService from './customerService';
 
 const reservationService = {
   getAll: async (): Promise<Reservation[]> => {
-    // This endpoint is for admins
-    const response = await api.get('/reservation');
+    // Using the correct endpoint from Swagger: /api/Reservation
+    const response = await api.get('/Reservation');
     return response.data;
   },
   
   getById: async (id: string): Promise<Reservation> => {
-    const response = await api.get(`/reservation/${id}`);
-    const reservation = response.data;
-    
-    // Get the menu items for this reservation if needed
-    const menuItems = await reservationService.getReservationMenuItems(id);
-    return {
-      ...reservation,
-      menuItems
-    };
+    // Using the correct endpoint from Swagger: /api/Reservation/{id}
+    const response = await api.get(`/Reservation/${id}`);
+    return response.data;
   },
   
   getUserReservations: async (userId: string): Promise<Reservation[]> => {
-    // This endpoint gets reservations for the current user
-    const response = await api.get('/reservation/my-reservations');
+    // Using the correct endpoint from Swagger: /api/Reservation/my-reservations
+    const response = await api.get('/Reservation/my-reservations');
+    return response.data;
+  },
+  
+  getCustomerReservations: async (customerId: string): Promise<Reservation[]> => {
+    // Using the correct endpoint from Swagger: /api/Reservation/customer/{customerId}
+    const response = await api.get(`/Reservation/customer/${customerId}`);
     return response.data;
   },
   
   create: async (reservationData: Omit<Reservation, 'id' | 'createdAt' | 'rowVersion'>): Promise<Reservation> => {
-    const response = await api.post('/reservation', reservationData);
+    // Using the correct endpoint from Swagger: /api/Reservation
+    const response = await api.post('/Reservation', reservationData);
     return response.data;
   },
   
   update: async (id: string, reservationData: Partial<Reservation>): Promise<Reservation> => {
-    const response = await api.put(`/reservation/${id}`, reservationData);
+    // Using the correct endpoint from Swagger: /api/Reservation/{id}
+    const response = await api.put(`/Reservation/${id}`, reservationData);
     return response.data;
   },
   
   delete: async (id: string): Promise<{ success: boolean }> => {
-    await api.delete(`/reservation/${id}`);
+    // Using the correct endpoint from Swagger: /api/Reservation/{id}
+    await api.delete(`/Reservation/${id}`);
     return { success: true };
   },
   
-  getCustomerInfo: async (customerId: string) => {
-    const customer = await customerService.getById(customerId);
-    return customer || { name: 'Unknown', phone: 'N/A' };
-  },
-  
+  // For handling menu items associated with reservations
   addMenuItemToReservation: async (reservationId: string, menuItemId: string, quantity: number): Promise<ReservationMenuItem> => {
-    // This would need to be implemented if there's an endpoint for it
-    // For now, we'll add it as part of the update operation
+    // This is a bit complex as we don't have a direct endpoint for this operation
+    // We'll need to get the reservation, add the menu item, and update the reservation
     const reservation = await reservationService.getById(reservationId);
     
     if (!reservation.menuItems) {
       reservation.menuItems = [];
     }
     
-    const existingItem = reservation.menuItems.find(
+    // Check if this menu item already exists in the reservation
+    const existingMenuItem = reservation.menuItems.find(
       item => item.menuItemId === menuItemId && item.reservationId === reservationId
     );
     
-    if (existingItem) {
-      existingItem.quantity += quantity;
+    if (existingMenuItem) {
+      // Update quantity if it already exists
+      existingMenuItem.quantity += quantity;
       await reservationService.update(reservationId, { menuItems: reservation.menuItems });
-      return existingItem;
+      return existingMenuItem;
     } else {
-      const newItem = {
+      // Add new menu item if it doesn't exist
+      const newMenuItem = {
         reservationId,
         menuItemId,
         quantity
       };
       
-      reservation.menuItems.push(newItem);
+      reservation.menuItems.push(newMenuItem);
       await reservationService.update(reservationId, { menuItems: reservation.menuItems });
-      return newItem;
+      return newMenuItem;
     }
   },
   
-  getReservationMenuItems: async (reservationId: string) => {
-    // If there's a specific endpoint for this, we'd use it
-    // For now, we're assuming the menuItems are included with the reservation
-    const reservation = await api.get(`/reservation/${reservationId}`);
-    let items = reservation.data.menuItems || [];
-    
-    // Fetch menu item details for each reservation menu item if needed
-    if (items.length > 0 && !items[0].menuItem) {
-      const detailedItems = await Promise.all(items.map(async (item: ReservationMenuItem) => {
-        const menuItem = await menuService.getById(item.menuItemId);
-        return {
-          ...item,
-          menuItem
-        };
-      }));
-      
-      return detailedItems;
-    }
-    
-    return items;
+  getReservationMenuItems: async (reservationId: string): Promise<ReservationMenuItem[]> => {
+    // This information should be included in the reservation response from getById
+    const reservation = await reservationService.getById(reservationId);
+    return reservation.menuItems || [];
   }
 };
 

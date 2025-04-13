@@ -28,7 +28,8 @@ export interface AuthResponse {
 
 const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response = await api.post('/auth/login', credentials);
+    // Using the correct endpoint from Swagger: /api/Auth/login
+    const response = await api.post('/Auth/login', credentials);
     
     // Store token and user data in localStorage
     localStorage.setItem('auth_token', response.data.token);
@@ -38,7 +39,8 @@ const authService = {
   },
   
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await api.post('/auth/register', data);
+    // Using the correct endpoint from Swagger: /api/Auth/register
+    const response = await api.post('/Auth/register', data);
     
     // Store token and user data in localStorage
     localStorage.setItem('auth_token', response.data.token);

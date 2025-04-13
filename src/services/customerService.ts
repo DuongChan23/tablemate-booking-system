@@ -4,39 +4,54 @@ import { Customer } from '@/types';
 
 const customerService = {
   getAll: async (): Promise<Customer[]> => {
-    const response = await api.get('/customers');
+    // Using the correct endpoint from Swagger: /api/Customers
+    const response = await api.get('/Customers');
     return response.data;
   },
   
   getById: async (id: string): Promise<Customer> => {
-    const response = await api.get(`/customers/${id}`);
+    // Using the correct endpoint from Swagger: /api/Customers/{id}
+    const response = await api.get(`/Customers/${id}`);
     return response.data;
   },
   
-  getByEmail: async (email: string): Promise<Customer> => {
-    const allCustomers = await customerService.getAll();
-    return allCustomers.find(customer => customer.email === email);
+  getByEmail: async (email: string): Promise<Customer | undefined> => {
+    // No specific endpoint exists for getByEmail, we'll filter from all customers
+    try {
+      const allCustomers = await customerService.getAll();
+      return allCustomers.find(customer => customer.email === email);
+    } catch (error) {
+      console.error('Error getting customer by email:', error);
+      throw error;
+    }
   },
   
   getByUserId: async (userId: string): Promise<Customer[]> => {
-    // The API doesn't seem to have a direct endpoint for this,
-    // so we'll filter from all customers
-    const allCustomers = await customerService.getAll();
-    return allCustomers.filter(customer => customer.userId === userId);
+    // No specific endpoint exists for getByUserId, we'll filter from all customers
+    try {
+      const allCustomers = await customerService.getAll();
+      return allCustomers.filter(customer => customer.userId === userId);
+    } catch (error) {
+      console.error('Error getting customers by userId:', error);
+      throw error;
+    }
   },
   
   create: async (customerData: Omit<Customer, 'id' | 'createdAt'>): Promise<Customer> => {
-    const response = await api.post('/customers', customerData);
+    // Using the correct endpoint from Swagger: /api/Customers
+    const response = await api.post('/Customers', customerData);
     return response.data;
   },
   
   update: async (id: string, customerData: Partial<Customer>): Promise<Customer> => {
-    const response = await api.put(`/customers/${id}`, customerData);
+    // Using the correct endpoint from Swagger: /api/Customers/{id}
+    const response = await api.put(`/Customers/${id}`, customerData);
     return response.data;
   },
   
   delete: async (id: string): Promise<{ success: boolean }> => {
-    await api.delete(`/customers/${id}`);
+    // Using the correct endpoint from Swagger: /api/Customers/{id}
+    await api.delete(`/Customers/${id}`);
     return { success: true };
   }
 };

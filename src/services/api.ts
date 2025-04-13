@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Base API configuration for axios
 const api = axios.create({
-  baseURL: 'http://localhost:5123/api', // Update to actual backend URL
+  baseURL: 'https://localhost:7119/api', // Updated to use HTTPS with the backend URL
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
