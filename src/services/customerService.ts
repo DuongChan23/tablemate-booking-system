@@ -11,7 +11,10 @@ const mockCustomers: Customer[] = [
     email: 'john.doe@example.com',
     phone: '555-123-4567',
     createdAt: '2025-01-01T00:00:00',
-    status: 'active'
+    status: 'active',
+    address: '123 Main St, Anytown',
+    visits: 5,
+    totalSpent: 450.75
   },
   {
     id: '2',
@@ -20,7 +23,10 @@ const mockCustomers: Customer[] = [
     email: 'jane.smith@example.com',
     phone: '555-987-6543',
     createdAt: '2025-01-02T00:00:00',
-    status: 'active'
+    status: 'active',
+    address: '456 Oak Ave, Somewhere',
+    visits: 3,
+    totalSpent: 220.50
   },
   {
     id: '3',
@@ -29,7 +35,10 @@ const mockCustomers: Customer[] = [
     email: 'robert.johnson@example.com',
     phone: '555-555-5555',
     createdAt: '2025-01-15T00:00:00',
-    status: 'inactive'
+    status: 'inactive',
+    address: '789 Pine St, Nowhere',
+    visits: 1,
+    totalSpent: 75.20
   },
   {
     id: '4',
@@ -38,7 +47,10 @@ const mockCustomers: Customer[] = [
     email: 'emily.williams@example.com',
     phone: '555-222-3333',
     createdAt: '2025-02-18T00:00:00',
-    status: 'active'
+    status: 'active',
+    address: '321 Elm Dr, Elsewhere',
+    visits: 7,
+    totalSpent: 620.90
   },
   {
     id: '5',
@@ -47,7 +59,10 @@ const mockCustomers: Customer[] = [
     email: 'michael.brown@example.com',
     phone: '555-777-8888',
     createdAt: '2025-01-10T00:00:00',
-    status: 'active'
+    status: 'active',
+    address: '654 Maple Ln, Anywhere',
+    visits: 2,
+    totalSpent: 180.25
   }
 ];
 

@@ -33,6 +33,16 @@ api.interceptors.response.use(
         localStorage.removeItem('auth_token');
         window.location.href = '/login';
       }
+      
+      // Forbidden
+      if (error.response.status === 403) {
+        console.error('Access denied. Insufficient permissions.');
+      }
+      
+      // Bad request
+      if (error.response.status === 400) {
+        console.error('Bad request:', error.response.data);
+      }
     }
     return Promise.reject(error);
   }

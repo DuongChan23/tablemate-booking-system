@@ -12,6 +12,7 @@ export interface RegisterData {
   firstName: string;
   lastName: string;
   phone?: string;
+  role?: 'admin' | 'user'; // Added explicit role field matching the backend
 }
 
 export interface AuthResponse {
@@ -29,6 +30,7 @@ const authService = {
   login: async (credentials: LoginCredentials) => {
     // This would be an actual API call in production
     // For now, simulate a successful login with mock data
+    // In real implementation, this would call /api/auth/login
     return {
       token: 'mock_token_12345',
       user: {
@@ -44,6 +46,7 @@ const authService = {
   register: async (data: RegisterData) => {
     // This would be an actual API call in production
     // For now, simulate a successful registration
+    // In real implementation, this would call /api/auth/register
     return {
       token: 'mock_token_12345',
       user: {
@@ -51,7 +54,7 @@ const authService = {
         email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
-        role: 'user' as const
+        role: data.role || 'user' as const
       }
     };
   },

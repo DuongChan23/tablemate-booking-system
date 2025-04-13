@@ -16,6 +16,7 @@ interface MenuItem {
   price: string;
   image: string;
   category: string;
+  isActive: boolean;
 }
 
 const Menu = () => {

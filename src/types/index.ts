@@ -6,6 +6,7 @@ export interface User {
   passwordHash: string;
   role: 'admin' | 'user';
   createdAt: string;
+  phone?: string; // Added phone property for User
 }
 
 export interface Customer {
@@ -15,7 +16,10 @@ export interface Customer {
   email: string;
   phone: string;
   createdAt: string;
-  status?: 'active' | 'inactive'; // Adding status field that's used in UI
+  status: 'active' | 'inactive';
+  address?: string; // Added address for Customer
+  visits?: number; // Added visits tracking
+  totalSpent?: number; // Added totalSpent tracking
 }
 
 export interface MenuItem {

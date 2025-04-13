@@ -88,7 +88,8 @@ const mockReservations: Reservation[] = [
 
 const reservationService = {
   getAll: async () => {
-    // This would be an actual API call in production
+    // This would be an API call to GET /api/reservation for admins
+    // or GET /api/reservation/my-customers-reservations for users
     return mockReservations;
   },
   
@@ -102,12 +103,13 @@ const reservationService = {
   },
   
   getUserReservations: async (userId: string) => {
-    // This would be an actual API call in production
+    // This would be an API call to GET /api/reservation/my-customers-reservations
     return mockReservations.filter(res => res.userId === userId);
   },
   
   create: async (reservationData: Omit<Reservation, 'id' | 'createdAt' | 'rowVersion'>) => {
-    // This would be an actual API call in production
+    // This would be an API call to POST /api/reservation
+    // In real app would include validation of customer ownership, menu items existence
     const newReservation = {
       ...reservationData,
       id: `res${Math.floor(Math.random() * 1000)}`,
@@ -122,7 +124,8 @@ const reservationService = {
   },
   
   update: async (id: string, reservationData: Partial<Reservation>) => {
-    // This would be an actual API call in production
+    // This would be an API call to PUT /api/reservation/{id}
+    // In real app would check ownership and handle concurrency with rowVersion
     const reservationIndex = mockReservations.findIndex(r => r.id === id);
     if (reservationIndex >= 0) {
       // Update rowVersion when updating the reservation
@@ -139,7 +142,8 @@ const reservationService = {
   },
   
   delete: async (id: string) => {
-    // This would be an actual API call in production
+    // This would be an API call to DELETE /api/reservation/{id}
+    // In real app would check ownership
     const reservationIndex = mockReservations.findIndex(r => r.id === id);
     if (reservationIndex >= 0) {
       mockReservations.splice(reservationIndex, 1);
