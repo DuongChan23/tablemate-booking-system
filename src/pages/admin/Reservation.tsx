@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,7 +35,7 @@ const reservationSchema = z.object({
 type ReservationFormValues = z.infer<typeof reservationSchema>;
 
 const ReservationPage = () => {
-  const { auth } = useAuth();
+  const { user } = useAuth(); // Fixed: Changed from auth to user directly
   const [searchTerm, setSearchTerm] = useState('');
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -136,11 +137,11 @@ const ReservationPage = () => {
       // If customer doesn't exist, create a new one
       if (!customer) {
         const newCustomer = {
-          userId: auth.user?.id || 'guest',
+          userId: user?.id || 'guest', // Fixed: Changed from auth.user?.id to user?.id
           name: values.customerName,
           email: values.customerEmail,
           phone: values.customerPhone,
-          status: 'active'
+          status: 'active' as 'active' | 'inactive' // Fixed: Explicitly cast to the correct union type
         };
         
         customer = await customerService.create(newCustomer);
@@ -148,7 +149,7 @@ const ReservationPage = () => {
       
       // Now create the reservation
       const reservationData = {
-        userId: auth.user?.id || 'guest',
+        userId: user?.id || 'guest', // Fixed: Changed from auth.user?.id to user?.id
         customerId: customer.id,
         reservationDate: values.reservationDate,
         numberOfGuests: values.numberOfGuests,
