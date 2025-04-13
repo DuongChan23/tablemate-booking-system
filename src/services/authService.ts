@@ -7,28 +7,26 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
+  name: string; // Changed from firstName/lastName to name
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
   phone?: string;
-  role?: 'admin' | 'user';
+  role: string; // Default to "customer"
 }
 
 export interface AuthResponse {
   token: string;
   user: {
     id: string;
+    name: string; // Changed from firstName/lastName to name
     email: string;
-    firstName: string;
-    lastName: string;
-    role: 'admin' | 'user';
+    role: string;
   }
 }
 
 const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    // Using the correct endpoint from Swagger: /api/Auth/login
+    // Using the correct endpoint from the image: /api/Auth/login
     const response = await api.post('/Auth/login', credentials);
     
     // Store token and user data in localStorage
@@ -39,8 +37,14 @@ const authService = {
   },
   
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    // Using the correct endpoint from Swagger: /api/Auth/register
-    const response = await api.post('/Auth/register', data);
+    // Set role to "customer" by default if not provided
+    const registerData = {
+      ...data,
+      role: data.role || "customer"
+    };
+
+    // Using the correct endpoint from the image: /api/Auth/register
+    const response = await api.post('/Auth/register', registerData);
     
     // Store token and user data in localStorage
     localStorage.setItem('auth_token', response.data.token);

@@ -1,12 +1,12 @@
 
 export interface User {
   id: string;
-  name: string;
+  name: string; // Changed from firstName/lastName to name
   email: string;
   passwordHash: string;
-  role: 'admin' | 'user';
+  role: string; // Changed from 'admin' | 'user' to string
   createdAt: string;
-  phone?: string; // Added phone property for User
+  phone?: string;
 }
 
 export interface Customer {
@@ -17,9 +17,9 @@ export interface Customer {
   phone: string;
   createdAt: string;
   status: 'active' | 'inactive';
-  address?: string; // Added address for Customer
-  visits?: number; // Added visits tracking
-  totalSpent?: number; // Added totalSpent tracking
+  address?: string;
+  visits?: number;
+  totalSpent?: number;
 }
 
 export interface MenuItem {

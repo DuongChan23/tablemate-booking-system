@@ -14,13 +14,13 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 const menuService = {
   getAll: async (): Promise<MenuItem[]> => {
-    // Using the correct endpoint from Swagger: /api/Menu
+    // Using the correct endpoint from the image: /api/Menu
     const response = await api.get('/Menu');
     return response.data;
   },
   
   getById: async (id: string): Promise<MenuItem> => {
-    // Using the correct endpoint from Swagger: /api/Menu/{id}
+    // Using the correct endpoint from the image: /api/Menu/{id}
     const response = await api.get(`/Menu/${id}`);
     return response.data;
   },
@@ -38,7 +38,7 @@ const menuService = {
       }
     }
     
-    // Using the correct endpoint from Swagger: /api/Menu
+    // Using the correct endpoint from the image: /api/Menu
     const response = await api.post('/Menu', menuData);
     return response.data;
   },
@@ -56,13 +56,13 @@ const menuService = {
       }
     }
     
-    // Using the correct endpoint from Swagger: /api/Menu/{id}
+    // Using the correct endpoint from the image: /api/Menu/{id}
     const response = await api.put(`/Menu/${id}`, menuData);
     return response.data;
   },
   
   delete: async (id: string): Promise<{ success: boolean }> => {
-    // Using the correct endpoint from Swagger: /api/Menu/{id}
+    // Using the correct endpoint from the image: /api/Menu/{id}
     await api.delete(`/Menu/${id}`);
     return { success: true };
   }
