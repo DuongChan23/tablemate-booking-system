@@ -4,22 +4,16 @@ export interface User {
   name: string;
   email: string;
   passwordHash: string;
-  phone?: string;
-  address?: string;
   role: 'admin' | 'user';
   createdAt: string;
 }
 
 export interface Customer {
   id: string;
+  userId: string; // Added userId field to match database diagram
   name: string;
   email: string;
   phone: string;
-  address?: string;
-  visits: number;
-  lastVisit?: string;
-  totalSpent: number;
-  status: 'active' | 'inactive';
   createdAt: string;
 }
 
@@ -28,9 +22,9 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
-  image?: string;
-  category: string;
-  isActive: boolean;
+  image?: string; // Keeping image as optional since it's not in DB schema but useful for UI
+  category: string; // Keeping category for UI organization
+  isActive: boolean; // Keeping this for filtering active menu items
 }
 
 export interface Reservation {
@@ -43,6 +37,7 @@ export interface Reservation {
   specialRequests?: string;
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
   createdAt: string;
+  rowVersion?: string; // Added rowVersion as optional to match schema
   menuItems?: ReservationMenuItem[];
 }
 

@@ -2,6 +2,7 @@
 import api from './api';
 import { Reservation, ReservationMenuItem } from '@/types';
 import menuService from './menuService';
+import customerService from './customerService';
 
 // Mock reservation menu items for demonstration
 const mockReservationMenuItems: ReservationMenuItem[] = [
@@ -33,7 +34,8 @@ const mockReservations: Reservation[] = [
     tableType: 'window',
     specialRequests: 'Window seat preferred',
     status: 'confirmed',
-    createdAt: '2025-04-01T10:15:00'
+    createdAt: '2025-04-01T10:15:00',
+    rowVersion: '0x00000000000007D1'
   },
   {
     id: '2',
@@ -44,7 +46,8 @@ const mockReservations: Reservation[] = [
     tableType: 'regular',
     specialRequests: 'Anniversary dinner',
     status: 'pending',
-    createdAt: '2025-04-02T09:20:00'
+    createdAt: '2025-04-02T09:20:00',
+    rowVersion: '0x00000000000007D2'
   },
   {
     id: '3',
@@ -54,7 +57,8 @@ const mockReservations: Reservation[] = [
     numberOfGuests: 6,
     tableType: 'large',
     status: 'confirmed',
-    createdAt: '2025-04-02T14:30:00'
+    createdAt: '2025-04-02T14:30:00',
+    rowVersion: '0x00000000000007D3'
   },
   {
     id: '4',
@@ -65,7 +69,8 @@ const mockReservations: Reservation[] = [
     tableType: 'regular',
     specialRequests: 'High chair needed',
     status: 'completed',
-    createdAt: '2025-04-01T11:05:00'
+    createdAt: '2025-04-01T11:05:00',
+    rowVersion: '0x00000000000007D4'
   },
   {
     id: '5',
@@ -76,18 +81,10 @@ const mockReservations: Reservation[] = [
     tableType: 'private',
     specialRequests: 'Business dinner, private room if possible',
     status: 'cancelled',
-    createdAt: '2025-04-03T16:45:00'
+    createdAt: '2025-04-03T16:45:00',
+    rowVersion: '0x00000000000007D5'
   }
 ];
-
-// Mock customer data for demonstration
-const mockCustomers: Record<string, { name: string, phone: string }> = {
-  'cust1': { name: 'John Doe', phone: '555-123-4567' },
-  'cust2': { name: 'Jane Smith', phone: '555-987-6543' },
-  'cust3': { name: 'Robert Johnson', phone: '555-555-5555' },
-  'cust4': { name: 'Emily Williams', phone: '555-222-3333' },
-  'cust5': { name: 'Michael Brown', phone: '555-777-8888' }
-};
 
 const reservationService = {
   getAll: async () => {
@@ -109,12 +106,13 @@ const reservationService = {
     return mockReservations.filter(res => res.userId === userId);
   },
   
-  create: async (reservationData: Omit<Reservation, 'id' | 'createdAt'>) => {
+  create: async (reservationData: Omit<Reservation, 'id' | 'createdAt' | 'rowVersion'>) => {
     // This would be an actual API call in production
     const newReservation = {
       ...reservationData,
       id: `res${Math.floor(Math.random() * 1000)}`,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      rowVersion: `0x00000000000${Math.floor(Math.random() * 10000)}`
     };
     
     // In a real app, this would add to the database
@@ -127,9 +125,13 @@ const reservationService = {
     // This would be an actual API call in production
     const reservationIndex = mockReservations.findIndex(r => r.id === id);
     if (reservationIndex >= 0) {
+      // Update rowVersion when updating the reservation
+      const newRowVersion = `0x00000000000${Math.floor(Math.random() * 10000)}`;
+      
       mockReservations[reservationIndex] = { 
         ...mockReservations[reservationIndex], 
-        ...reservationData 
+        ...reservationData,
+        rowVersion: newRowVersion
       };
       return mockReservations[reservationIndex];
     }
@@ -138,11 +140,23 @@ const reservationService = {
   
   delete: async (id: string) => {
     // This would be an actual API call in production
+    const reservationIndex = mockReservations.findIndex(r => r.id === id);
+    if (reservationIndex >= 0) {
+      mockReservations.splice(reservationIndex, 1);
+      
+      // Also delete any associated menu items
+      const menuItemsToKeep = mockReservationMenuItems.filter(
+        item => item.reservationId !== id
+      );
+      mockReservationMenuItems.length = 0;
+      mockReservationMenuItems.push(...menuItemsToKeep);
+    }
     return { success: true };
   },
   
   getCustomerInfo: async (customerId: string) => {
-    return mockCustomers[customerId] || { name: 'Unknown', phone: 'N/A' };
+    const customer = await customerService.getById(customerId);
+    return customer || { name: 'Unknown', phone: 'N/A' };
   },
   
   addMenuItemToReservation: async (reservationId: string, menuItemId: string, quantity: number) => {
