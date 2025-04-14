@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string; // Changed from firstName/lastName to name
