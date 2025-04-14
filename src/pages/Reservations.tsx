@@ -7,13 +7,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { CalendarIcon, Clock, CheckCircle, ArrowRight } from 'lucide-react';
+import { ArrowRight, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import reservationService from '@/services/reservationService';
+import { format } from 'date-fns';
 import { Reservation } from '@/types';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon, Clock } from 'lucide-react';
+
+interface FormData {
+  fullName: string;
+  email: string;
+  phone: string;
+  specialRequests: string;
+}
+
+interface ReservationDetails {
+  date: string;
+  time: string;
+  guests: string;
+  tableType: string;
+}
 
 const tableTypes = [
   { value: "regular", label: "Regular Table" },
@@ -31,7 +46,7 @@ const Reservations = () => {
   const [reservationDateTime, setReservationDateTime] = useState<string>("");
   const [guests, setGuests] = useState<string>("2");
   const [tableType, setTableType] = useState<string>("regular");
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     fullName: '',
     email: '',
     phone: '',
@@ -39,7 +54,7 @@ const Reservations = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [reservationDetails, setReservationDetails] = useState<any>(null);
+  const [reservationDetails, setReservationDetails] = useState<ReservationDetails | null>(null);
 
   // Auto-fill form data from user information when logged in
   useEffect(() => {
@@ -91,15 +106,19 @@ const Reservations = () => {
       // Create the reservation in our service
       const newReservation = await reservationService.create(reservationData);
       
-      const reservationDate = new Date(reservationDateTime);
-      setReservationDetails({
-        date: format(reservationDate, 'EEEE, MMMM d, yyyy'),
-        time: format(reservationDate, 'h:mm a'),
-        guests: guests,
-        tableType: tableTypes.find(t => t.value === tableType)?.label || tableType
-      });
-      
-      setIsSuccess(true);
+      if (newReservation) {
+        const reservationDate = new Date(reservationDateTime);
+        setReservationDetails({
+          date: format(reservationDate, 'EEEE, MMMM d, yyyy'),
+          time: format(reservationDate, 'h:mm a'),
+          guests: guests,
+          tableType: tableTypes.find(t => t.value === tableType)?.label || tableType
+        });
+        
+        setIsSuccess(true);
+      } else {
+        throw new Error('Failed to create reservation');
+      }
     } catch (error) {
       console.error('Error creating reservation:', error);
       toast({
@@ -154,26 +173,28 @@ const Reservations = () => {
                     We've received your reservation request and will confirm it shortly.
                   </p>
                   
-                  <div className="bg-muted/40 rounded-lg p-4 mb-6">
-                    <div className="grid gap-2">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Date:</span>
-                        <span className="font-medium">{reservationDetails?.date}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Time:</span>
-                        <span className="font-medium">{reservationDetails?.time}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Party Size:</span>
-                        <span className="font-medium">{reservationDetails?.guests} {parseInt(reservationDetails?.guests, 10) === 1 ? 'guest' : 'guests'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Table Type:</span>
-                        <span className="font-medium">{reservationDetails?.tableType}</span>
+                  {reservationDetails && (
+                    <div className="bg-muted/40 rounded-lg p-4 mb-6">
+                      <div className="grid gap-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Date:</span>
+                          <span className="font-medium">{reservationDetails.date}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Time:</span>
+                          <span className="font-medium">{reservationDetails.time}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Party Size:</span>
+                          <span className="font-medium">{reservationDetails.guests} {parseInt(reservationDetails.guests, 10) === 1 ? 'guest' : 'guests'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Table Type:</span>
+                          <span className="font-medium">{reservationDetails.tableType}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                   
                   <p className="text-sm text-muted-foreground mb-6">
                     A confirmation email has been sent to your email address. Please contact us if you need to make any changes.

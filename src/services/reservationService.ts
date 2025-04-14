@@ -4,58 +4,94 @@ import { Reservation, ReservationMenuItem } from '@/types';
 
 const reservationService = {
   getAll: async (): Promise<Reservation[]> => {
-    // Using the correct endpoint from the image: /api/Reservation
-    const response = await api.get('/Reservation');
-    return response.data;
+    try {
+      const response = await api.get('/Reservation');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching reservations:', error);
+      return [];
+    }
   },
   
-  getById: async (id: string): Promise<Reservation> => {
-    // Using the correct endpoint from the image: /api/Reservation/{id}
-    const response = await api.get(`/Reservation/${id}`);
-    return response.data;
+  getById: async (id: string): Promise<Reservation | null> => {
+    try {
+      const response = await api.get(`/Reservation/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching reservation ${id}:`, error);
+      return null;
+    }
   },
   
   getUserReservations: async (userId: string): Promise<Reservation[]> => {
-    // Using the correct endpoint from the image: /api/Reservation/user/{userId}
-    const response = await api.get(`/Reservation/user/${userId}`);
-    return response.data;
+    try {
+      const response = await api.get(`/Reservation/user/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching user reservations for ${userId}:`, error);
+      return [];
+    }
   },
   
   getCustomerReservations: async (customerId: string): Promise<Reservation[]> => {
-    // Using the correct endpoint from the image: /api/Reservation/customer/{customerId}
-    const response = await api.get(`/Reservation/customer/${customerId}`);
-    return response.data;
+    try {
+      const response = await api.get(`/Reservation/customer/${customerId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching customer reservations for ${customerId}:`, error);
+      return [];
+    }
   },
   
-  create: async (reservationData: Omit<Reservation, 'id' | 'createdAt' | 'rowVersion'>): Promise<Reservation> => {
-    // Using the correct endpoint from the image: /api/Reservation
-    const response = await api.post('/Reservation', reservationData);
-    return response.data;
+  create: async (reservationData: Omit<Reservation, 'id' | 'createdAt' | 'rowVersion'>): Promise<Reservation | null> => {
+    try {
+      const response = await api.post('/Reservation', reservationData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      throw error;
+    }
   },
   
-  update: async (id: string, reservationData: Partial<Reservation>): Promise<Reservation> => {
-    // Using the correct endpoint from the image: /api/Reservation/{id}
-    const response = await api.put(`/Reservation/${id}`, reservationData);
-    return response.data;
+  update: async (id: string, reservationData: Partial<Reservation>): Promise<Reservation | null> => {
+    try {
+      const response = await api.put(`/Reservation/${id}`, reservationData);
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating reservation ${id}:`, error);
+      throw error;
+    }
   },
   
   delete: async (id: string): Promise<{ success: boolean }> => {
-    // Using the correct endpoint from the image: /api/Reservation/{id}
-    await api.delete(`/Reservation/${id}`);
-    return { success: true };
+    try {
+      await api.delete(`/Reservation/${id}`);
+      return { success: true };
+    } catch (error) {
+      console.error(`Error deleting reservation ${id}:`, error);
+      return { success: false };
+    }
   },
   
   // For handling menu items associated with reservations
-  addMenuItemToReservation: async (reservationId: string, menuItemId: string, quantity: number): Promise<ReservationMenuItem> => {
-    // Using the correct endpoint from the image: /api/Reservation/{reservationId}/menu-item/{menuItemId}
-    const response = await api.post(`/Reservation/${reservationId}/menu-item/${menuItemId}`, { quantity });
-    return response.data;
+  addMenuItemToReservation: async (reservationId: string, menuItemId: string, quantity: number): Promise<ReservationMenuItem | null> => {
+    try {
+      const response = await api.post(`/Reservation/${reservationId}/menu-item/${menuItemId}`, { quantity });
+      return response.data;
+    } catch (error) {
+      console.error(`Error adding menu item to reservation ${reservationId}:`, error);
+      return null;
+    }
   },
   
   getReservationMenuItems: async (reservationId: string): Promise<ReservationMenuItem[]> => {
-    // Using the correct endpoint from the image: /api/Reservation/{reservationId}/menu-items
-    const response = await api.get(`/Reservation/${reservationId}/menu-items`);
-    return response.data;
+    try {
+      const response = await api.get(`/Reservation/${reservationId}/menu-items`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching menu items for reservation ${reservationId}:`, error);
+      return [];
+    }
   }
 };
 

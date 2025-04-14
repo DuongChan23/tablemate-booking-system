@@ -67,8 +67,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Set the user data directly from the API response
       setUser(response.user as User);
-    } catch (err: any) {
-      setError(err.message || 'Failed to login');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to login';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
@@ -88,8 +89,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Set the user data directly from the API response
       setUser(response.user as User);
-    } catch (err: any) {
-      setError(err.message || 'Failed to register');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to register';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);

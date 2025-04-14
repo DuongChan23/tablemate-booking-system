@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Calendar, Clock, Users, UtensilsCrossed, UserCog } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
@@ -84,6 +83,7 @@ const DashboardStats = () => {
     reservation => reservation.status === 'pending'
   )?.length || 0;
 
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
       <StatCard 
