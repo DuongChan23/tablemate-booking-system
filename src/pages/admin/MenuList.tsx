@@ -222,10 +222,10 @@ const MenuList = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Category</TableHead>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Description</TableHead>
                     <TableHead>Price</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -239,34 +239,14 @@ const MenuList = () => {
                   ) : (
                     filteredMenuItems.map((item) => (
                       <TableRow key={item.id}>
+                        <TableCell>{item.id}</TableCell>
+                        <TableCell>{item.name}</TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-md overflow-hidden">
-                              <img 
-                                src={item.image} 
-                                alt={item.name} 
-                                className="h-full w-full object-cover"
-                              />
-                            </div>
-                            <div>
-                              <div className="font-medium">{item.name}</div>
-                              <div className="text-xs text-muted-foreground truncate max-w-xs">
-                                {item.description}
-                              </div>
-                            </div>
+                          <div className="max-w-xs truncate">
+                            {item.description}
                           </div>
                         </TableCell>
-                        <TableCell>{getCategoryLabel(item.category)}</TableCell>
                         <TableCell>${item.price.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            item.isActive 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {item.isActive ? 'Available' : 'Unavailable'}
-                          </span>
-                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button 
