@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -8,11 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format, addMinutes } from 'date-fns';
+import { format } from 'date-fns';
 import { CalendarIcon, Clock, CheckCircle, ArrowRight } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import reservationService from '@/services/reservationService';
@@ -31,14 +28,11 @@ const Reservations = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, isAdmin } = useAuth();
   
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [hours, setHours] = useState<string>("19");
-  const [minutes, setMinutes] = useState<string>("00");
+  const [reservationDateTime, setReservationDateTime] = useState<string>("");
   const [guests, setGuests] = useState<string>("2");
   const [tableType, setTableType] = useState<string>("regular");
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
     phone: '',
     specialRequests: ''
@@ -50,32 +44,14 @@ const Reservations = () => {
   // Auto-fill form data from user information when logged in
   useEffect(() => {
     if (isAuthenticated && user) {
-      // Split name into first and last name if available
-      const nameParts = user.firstName ? user.firstName.split(' ') : [''];
-      const firstName = nameParts[0] || '';
-      const lastName = user.lastName || '';
-      
       setFormData({
-        firstName: firstName,
-        lastName: lastName,
+        fullName: user.name || '',
         email: user.email || '',
         phone: '',  // We might not have this in the user object
         specialRequests: ''
       });
     }
   }, [isAuthenticated, user]);
-
-  // Generate hours array (12pm - 10pm for restaurant hours)
-  const hoursOptions = Array.from({ length: 11 }, (_, i) => {
-    const hour = i + 12; // Start from 12 (12pm)
-    return { value: String(hour), label: hour > 12 ? `${hour - 12}` : `${hour}` };
-  });
-  
-  // Generate minutes array (00, 15, 30, 45)
-  const minutesOptions = ["00", "15", "30", "45"].map(minute => ({ 
-    value: minute, 
-    label: minute 
-  }));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -85,23 +61,13 @@ const Reservations = () => {
     }));
   };
 
-  const getReservationDateTime = () => {
-    if (!date) return null;
-    
-    const reservationDate = new Date(date);
-    reservationDate.setHours(parseInt(hours, 10));
-    reservationDate.setMinutes(parseInt(minutes, 10));
-    
-    return reservationDate;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!date) {
+    if (!reservationDateTime) {
       toast({
         title: "Missing information",
-        description: "Please select a date for your reservation.",
+        description: "Please select a date and time for your reservation.",
         variant: "destructive"
       });
       return;
@@ -109,29 +75,26 @@ const Reservations = () => {
     
     setIsLoading(true);
     
-    const reservationDateTime = getReservationDateTime();
-    if (!reservationDateTime) return;
-    
-    // In a real app, this would create an actual reservation
     try {
       // Here we would normally match the customer with the user or create a new customer
       // For this demo, we're creating a simple reservation
       const reservationData = {
         userId: user?.id || 'guest', 
         customerId: 'cust1', // In a real app, this would be looked up or created
-        reservationDate: reservationDateTime.toISOString(),
+        reservationDate: new Date(reservationDateTime).toISOString(),
         numberOfGuests: parseInt(guests, 10),
         tableType,
         specialRequests: formData.specialRequests || undefined,
         status: 'pending' as const  // Type assertion to ensure correct typing
       };
       
-      // Create the reservation in our mock service
+      // Create the reservation in our service
       const newReservation = await reservationService.create(reservationData);
       
+      const reservationDate = new Date(reservationDateTime);
       setReservationDetails({
-        date: format(reservationDateTime, 'EEEE, MMMM d, yyyy'),
-        time: format(reservationDateTime, 'h:mm a'),
+        date: format(reservationDate, 'EEEE, MMMM d, yyyy'),
+        time: format(reservationDate, 'h:mm a'),
         guests: guests,
         tableType: tableTypes.find(t => t.value === tableType)?.label || tableType
       });
@@ -152,15 +115,12 @@ const Reservations = () => {
   const handleReset = () => {
     setIsSuccess(false);
     setFormData({
-      firstName: '',
-      lastName: '',
+      fullName: '',
       email: '',
       phone: '',
       specialRequests: ''
     });
-    setDate(undefined);
-    setHours("19");
-    setMinutes("00");
+    setReservationDateTime("");
     setGuests("2");
     setTableType("regular");
   };
@@ -248,27 +208,15 @@ const Reservations = () => {
                   <CardContent className="pt-6">
                     <form onSubmit={handleSubmit}>
                       <div className="grid gap-6">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="grid gap-2">
-                            <Label htmlFor="firstName">First Name</Label>
-                            <Input 
-                              id="firstName" 
-                              name="firstName" 
-                              value={formData.firstName}
-                              onChange={handleChange}
-                              required 
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <Label htmlFor="lastName">Last Name</Label>
-                            <Input 
-                              id="lastName" 
-                              name="lastName" 
-                              value={formData.lastName}
-                              onChange={handleChange}
-                              required 
-                            />
-                          </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="fullName">Full Name</Label>
+                          <Input 
+                            id="fullName" 
+                            name="fullName" 
+                            value={formData.fullName}
+                            onChange={handleChange}
+                            required 
+                          />
                         </div>
                         
                         <div className="grid gap-2">
@@ -296,69 +244,15 @@ const Reservations = () => {
                         </div>
                         
                         <div className="grid gap-2">
-                          <Label htmlFor="date">Date</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="outline"
-                                className="w-full justify-start text-left font-normal"
-                                id="date"
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {date ? format(date, 'MMMM d, yyyy') : <span>Select a date</span>}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={date}
-                                onSelect={setDate}
-                                initialFocus
-                                disabled={(date) => {
-                                  // Disable dates in the past
-                                  return date < new Date(new Date().setHours(0, 0, 0, 0));
-                                }}
-                                className="pointer-events-auto"
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                        
-                        <div className="grid gap-2">
-                          <Label>Time</Label>
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <div className="grid grid-cols-2 gap-2 flex-1">
-                              <Select value={hours} onValueChange={setHours}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Hour" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {hoursOptions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              
-                              <Select value={minutes} onValueChange={setMinutes}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Minute" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {minutesOptions.map((option) => (
-                                    <SelectItem key={option.value} value={option.value}>
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <span className="text-sm text-muted-foreground">
-                              {parseInt(hours) >= 12 ? 'PM' : 'AM'}
-                            </span>
-                          </div>
+                          <Label htmlFor="reservationDateTime">Date & Time</Label>
+                          <Input
+                            id="reservationDateTime"
+                            type="datetime-local"
+                            value={reservationDateTime}
+                            onChange={(e) => setReservationDateTime(e.target.value)}
+                            min={new Date().toISOString().slice(0, 16)}
+                            required
+                          />
                           <p className="text-xs text-muted-foreground mt-1">
                             Our dinner service runs from 12:00 PM to 10:00 PM
                           </p>
@@ -367,35 +261,35 @@ const Reservations = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="grid gap-2">
                             <Label htmlFor="guests">Number of Guests</Label>
-                            <Select value={guests} onValueChange={setGuests}>
-                              <SelectTrigger id="guests">
-                                <SelectValue placeholder="Select guests" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-                                  <SelectItem key={num} value={num.toString()}>
-                                    {num} {num === 1 ? 'guest' : 'guests'}
-                                  </SelectItem>
-                                ))}
-                                <SelectItem value="9+">9+ guests</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <select
+                              id="guests"
+                              value={guests}
+                              onChange={(e) => setGuests(e.target.value)}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                              {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                                <option key={num} value={num.toString()}>
+                                  {num} {num === 1 ? 'guest' : 'guests'}
+                                </option>
+                              ))}
+                              <option value="9+">9+ guests</option>
+                            </select>
                           </div>
                           
                           <div className="grid gap-2">
                             <Label htmlFor="tableType">Table Type</Label>
-                            <Select value={tableType} onValueChange={setTableType}>
-                              <SelectTrigger id="tableType">
-                                <SelectValue placeholder="Select table type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {tableTypes.map((type) => (
-                                  <SelectItem key={type.value} value={type.value}>
-                                    {type.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <select
+                              id="tableType"
+                              value={tableType}
+                              onChange={(e) => setTableType(e.target.value)}
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                            >
+                              {tableTypes.map((type) => (
+                                <option key={type.value} value={type.value}>
+                                  {type.label}
+                                </option>
+                              ))}
+                            </select>
                           </div>
                         </div>
                         
