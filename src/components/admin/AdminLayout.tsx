@@ -1,17 +1,9 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Users, UtensilsCrossed, CalendarDays, User as UserIcon, Menu, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-  LayoutDashboard,
-  Users,
-  UtensilsCrossed,
-  Calendar,
-  LogOut,
-  Menu,
-  X,
-  Home
-} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 interface AdminLayoutProps {
@@ -19,181 +11,97 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-
-  const isCurrentPath = (path: string) => {
-    return location.pathname === path;
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
-    { icon: Users, label: 'Customers', path: '/admin/customers' },
-    { icon: UtensilsCrossed, label: 'Menu', path: '/admin/menu' },
-    { icon: Calendar, label: 'Reservations', path: '/admin/reservations' },
-    { icon: Home, label: 'Visit Website', path: '/' }
+    { name: 'Dashboard', path: '/admin', icon: <LayoutDashboard className="h-5 w-5" /> },
+    { name: 'Reservations', path: '/admin/reservations', icon: <CalendarDays className="h-5 w-5" /> },
+    { name: 'Customers', path: '/admin/customers', icon: <Users className="h-5 w-5" /> },
+    { name: 'Users', path: '/admin/users', icon: <UserIcon className="h-5 w-5" /> },  // New menu item
+    { name: 'Menu', path: '/admin/menu', icon: <UtensilsCrossed className="h-5 w-5" /> },
   ];
 
+  const isActive = (path: string) => location.pathname === path;
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar for desktop */}
-      <aside 
-        className={`bg-white border-r border-gray-200 transition-all duration-300 hidden md:block ${
-          isSidebarOpen ? 'w-64' : 'w-20'
-        }`}
+    <div className="flex h-screen bg-gray-100">
+      {/* Mobile sidebar toggle */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <Button variant="outline" size="icon" onClick={toggleSidebar}>
+          {sidebarOpen ? <X /> : <Menu />}
+        </Button>
+      </div>
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-40 w-64 transform bg-white shadow-lg transition-transform duration-300 ease-in-out lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        )}
       >
-        <div className="h-full flex flex-col">
-          <div className="p-4 border-b flex items-center justify-between">
-            {isSidebarOpen ? (
-              <Link to="/admin" className="flex items-center">
-                <span className="text-xl font-serif font-bold text-tablemate-burgundy">TableMate</span>
-              </Link>
-            ) : (
-              <Link to="/admin" className="w-full flex justify-center">
-                <span className="text-xl font-serif font-bold text-tablemate-burgundy">TM</span>
-              </Link>
-            )}
-            <Button
-              variant="ghost" 
-              size="icon"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="text-gray-500 hover:text-gray-700 focus:outline-none"
-            >
-              <Menu size={20} />
-            </Button>
+        <div className="flex h-full flex-col">
+          {/* Sidebar header */}
+          <div className="flex items-center justify-center h-16 border-b">
+            <h2 className="text-xl font-serif font-bold text-tablemate-burgundy">TableMate Admin</h2>
           </div>
-          
-          <div className="flex-1 py-6 flex flex-col justify-between">
+
+          {/* Sidebar content */}
+          <div className="flex-1 overflow-y-auto py-4">
             <nav className="px-2 space-y-1">
               {navItems.map((item) => (
                 <Link
-                  key={item.path}
+                  key={item.name}
                   to={item.path}
-                  className={`flex items-center py-2.5 px-3 rounded-md transition-colors ${
-                    isCurrentPath(item.path)
-                      ? 'bg-tablemate-burgundy/10 text-tablemate-burgundy'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  } ${!isSidebarOpen ? 'justify-center' : ''}`}
+                  className={cn(
+                    "flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors",
+                    isActive(item.path)
+                      ? "bg-tablemate-burgundy text-white"
+                      : "text-gray-700 hover:bg-tablemate-burgundy/10 hover:text-tablemate-burgundy"
+                  )}
+                  onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon size={20} className={isSidebarOpen ? 'mr-3' : ''} />
-                  {isSidebarOpen && <span>{item.label}</span>}
+                  <div className="mr-3">
+                    {item.icon}
+                  </div>
+                  {item.name}
                 </Link>
               ))}
             </nav>
-            
-            <div className="px-2">
-              <Button
-                variant="ghost"
-                className={`w-full flex items-center py-2.5 px-3 text-gray-700 hover:bg-gray-100 ${
-                  !isSidebarOpen ? 'justify-center' : ''
-                }`}
-                onClick={handleLogout}
-              >
-                <LogOut size={20} className={isSidebarOpen ? 'mr-3' : ''} />
-                {isSidebarOpen && <span>Logout</span>}
-              </Button>
-            </div>
+          </div>
+
+          {/* Sidebar footer */}
+          <div className="p-4 border-t">
+            <Button 
+              variant="outline" 
+              className="w-full"
+              onClick={logout}
+            >
+              Sign out
+            </Button>
           </div>
         </div>
       </aside>
-      
-      {/* Mobile sidebar */}
-      <div className={`fixed inset-0 z-40 md:hidden ${isMobileSidebarOpen ? 'block' : 'hidden'}`}>
-        {/* Backdrop */}
-        <div 
-          className="fixed inset-0 bg-black/30" 
-          onClick={() => setIsMobileSidebarOpen(false)}
-          aria-hidden="true"
-        ></div>
-        
-        {/* Sidebar */}
-        <div className="fixed inset-y-0 left-0 w-64 bg-white shadow-lg border-r">
-          <div className="h-full flex flex-col">
-            <div className="p-4 border-b flex items-center justify-between">
-              <Link to="/admin" className="flex items-center">
-                <span className="text-xl font-serif font-bold text-tablemate-burgundy">TableMate</span>
-              </Link>
-              <Button
-                variant="ghost" 
-                size="icon"
-                onClick={() => setIsMobileSidebarOpen(false)}
-                className="text-gray-500 hover:text-gray-700 focus:outline-none"
-              >
-                <X size={20} />
-              </Button>
-            </div>
-            
-            <div className="flex-1 py-6 flex flex-col justify-between">
-              <nav className="px-2 space-y-1">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`flex items-center py-2.5 px-3 rounded-md transition-colors ${
-                      isCurrentPath(item.path)
-                        ? 'bg-tablemate-burgundy/10 text-tablemate-burgundy'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                    onClick={() => setIsMobileSidebarOpen(false)}
-                  >
-                    <item.icon size={20} className="mr-3" />
-                    <span>{item.label}</span>
-                  </Link>
-                ))}
-              </nav>
-              
-              <div className="px-2">
-                <Button
-                  variant="ghost"
-                  className="w-full flex items-center py-2.5 px-3 text-gray-700 hover:bg-gray-100"
-                  onClick={handleLogout}
-                >
-                  <LogOut size={20} className="mr-3" />
-                  <span>Logout</span>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
+
       {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        <header className="bg-white shadow-sm z-10 relative">
-          <div className="h-16 px-4 flex items-center justify-between md:justify-end">
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost" 
-              size="icon"
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="md:hidden"
-            >
-              <Menu size={20} />
-            </Button>
-            
-            <div className="flex items-center">
-              <div className="relative">
-                <div className="flex items-center">
-                  <span className="mr-2 text-sm">Admin User</span>
-                  <div className="h-8 w-8 rounded-full bg-tablemate-burgundy text-white flex items-center justify-center">
-                    AU
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
+      <div className="flex-1 lg:ml-64">
+        {/* Overlay for mobile when sidebar is open */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/30 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
         
-        {children}
-      </main>
+        <main className="min-h-screen bg-gray-100">
+          {children}
+        </main>
+      </div>
     </div>
   );
 };

@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, UtensilsCrossed } from 'lucide-react';
+import { Calendar, Clock, Users, UtensilsCrossed, UserCog } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useQuery } from '@tanstack/react-query';
 import reservationService from '@/services/reservationService';
 import customerService from '@/services/customerService';
+import userService from '@/services/userService';
 import menuService from '@/services/menuService';
 import { format } from 'date-fns';
 
@@ -53,6 +54,15 @@ const DashboardStats = () => {
     queryFn: customerService.getAll,
   });
 
+  // Fetch users
+  const {
+    data: users,
+    isLoading: isLoadingUsers
+  } = useQuery({
+    queryKey: ['users'],
+    queryFn: userService.getAll,
+  });
+
   // Fetch menu items
   const {
     data: menuItems,
@@ -75,7 +85,7 @@ const DashboardStats = () => {
   )?.length || 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
       <StatCard 
         title="Today's Reservations" 
         value={isLoadingReservations ? '...' : todayReservations} 
@@ -88,6 +98,13 @@ const DashboardStats = () => {
         value={isLoadingCustomers ? '...' : customers?.length || 0} 
         icon={<Users className="h-8 w-8 text-tablemate-burgundy opacity-80" />}
         isLoading={isLoadingCustomers}
+      />
+      
+      <StatCard 
+        title="Total Users" 
+        value={isLoadingUsers ? '...' : users?.length || 0} 
+        icon={<UserCog className="h-8 w-8 text-tablemate-burgundy opacity-80" />}
+        isLoading={isLoadingUsers}
       />
       
       <StatCard 

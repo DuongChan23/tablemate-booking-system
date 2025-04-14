@@ -17,6 +17,7 @@ import Reservations from "./pages/Reservations";
 import ReservationHistory from "./pages/ReservationHistory";
 import Dashboard from "./pages/admin/Dashboard";
 import CustomerList from "./pages/admin/CustomerList";
+import UserList from "./pages/admin/UserList";  // Add the new import
 import MenuList from "./pages/admin/MenuList";
 import ReservationPage from "./pages/admin/Reservation"; 
 import NotFound from "./pages/NotFound";
@@ -47,6 +48,7 @@ const App = () => (
             <Route element={<AdminRoutes />}>
               <Route path="/admin" element={<Dashboard />} />
               <Route path="/admin/customers" element={<CustomerList />} />
+              <Route path="/admin/users" element={<UserList />} />  {/* Add the new route */}
               <Route path="/admin/menu" element={<MenuList />} />
               <Route path="/admin/reservations" element={<ReservationPage />} />
             </Route>
