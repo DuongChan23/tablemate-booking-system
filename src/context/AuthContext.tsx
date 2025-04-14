@@ -5,9 +5,8 @@ import authService, { LoginCredentials, RegisterData } from '@/services/authServ
 interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: 'admin' | 'user';
+  name: string;  // Changed from firstName/lastName to name
+  role: string;  // Changed from 'admin' | 'user' to string for more flexibility
 }
 
 interface AuthContextType {
@@ -66,13 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('auth_token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
-      // Ensure the role is correctly typed before setting the user
-      const userData = {
-        ...response.user,
-        role: response.user.role as 'admin' | 'user'
-      };
-      
-      setUser(userData);
+      // Set the user data directly from the API response
+      setUser(response.user as User);
     } catch (err: any) {
       setError(err.message || 'Failed to login');
       throw err;
@@ -92,13 +86,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem('auth_token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       
-      // Ensure the role is correctly typed before setting the user
-      const userData = {
-        ...response.user,
-        role: response.user.role as 'admin' | 'user'
-      };
-      
-      setUser(userData);
+      // Set the user data directly from the API response
+      setUser(response.user as User);
     } catch (err: any) {
       setError(err.message || 'Failed to register');
       throw err;
