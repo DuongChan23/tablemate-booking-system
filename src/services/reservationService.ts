@@ -5,7 +5,7 @@ import { Reservation, ReservationMenuItem } from '@/types';
 const reservationService = {
   getAll: async (): Promise<Reservation[]> => {
     try {
-      const response = await api.get('/Reservation');
+      const response = await api.get('/Reservations');
       return response.data;
     } catch (error) {
       console.error('Error fetching reservations:', error);
@@ -15,7 +15,7 @@ const reservationService = {
   
   getById: async (id: string): Promise<Reservation | null> => {
     try {
-      const response = await api.get(`/Reservation/${id}`);
+      const response = await api.get(`/Reservations/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching reservation ${id}:`, error);
@@ -25,7 +25,7 @@ const reservationService = {
   
   getUserReservations: async (userId: string): Promise<Reservation[]> => {
     try {
-      const response = await api.get(`/Reservation/user/${userId}`);
+      const response = await api.get(`/Reservations/user/${userId}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching user reservations for ${userId}:`, error);
@@ -35,7 +35,7 @@ const reservationService = {
   
   getCustomerReservations: async (customerId: string): Promise<Reservation[]> => {
     try {
-      const response = await api.get(`/Reservation/customer/${customerId}`);
+      const response = await api.get(`/Reservations/customer/${customerId}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching customer reservations for ${customerId}:`, error);
@@ -45,7 +45,7 @@ const reservationService = {
   
   create: async (reservationData: Omit<Reservation, 'id' | 'createdAt' | 'rowVersion'>): Promise<Reservation | null> => {
     try {
-      const response = await api.post('/Reservation', reservationData);
+      const response = await api.post('/Reservations', reservationData);
       return response.data;
     } catch (error) {
       console.error('Error creating reservation:', error);
@@ -55,7 +55,7 @@ const reservationService = {
   
   update: async (id: string, reservationData: Partial<Reservation>): Promise<Reservation | null> => {
     try {
-      const response = await api.put(`/Reservation/${id}`, reservationData);
+      const response = await api.put(`/Reservations/${id}`, reservationData);
       return response.data;
     } catch (error) {
       console.error(`Error updating reservation ${id}:`, error);
@@ -65,7 +65,7 @@ const reservationService = {
   
   delete: async (id: string): Promise<{ success: boolean }> => {
     try {
-      await api.delete(`/Reservation/${id}`);
+      await api.delete(`/Reservations/${id}`);
       return { success: true };
     } catch (error) {
       console.error(`Error deleting reservation ${id}:`, error);
@@ -76,7 +76,7 @@ const reservationService = {
   // For handling menu items associated with reservations
   addMenuItemToReservation: async (reservationId: string, menuItemId: string, quantity: number): Promise<ReservationMenuItem | null> => {
     try {
-      const response = await api.post(`/Reservation/${reservationId}/menu-item/${menuItemId}`, { quantity });
+      const response = await api.post(`/Reservations/${reservationId}/menu-item/${menuItemId}`, { quantity });
       return response.data;
     } catch (error) {
       console.error(`Error adding menu item to reservation ${reservationId}:`, error);
@@ -86,7 +86,7 @@ const reservationService = {
   
   getReservationMenuItems: async (reservationId: string): Promise<ReservationMenuItem[]> => {
     try {
-      const response = await api.get(`/Reservation/${reservationId}/menu-items`);
+      const response = await api.get(`/Reservations/${reservationId}/menu-items`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching menu items for reservation ${reservationId}:`, error);
