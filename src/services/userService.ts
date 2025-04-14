@@ -2,6 +2,11 @@
 import api from './api';
 import { User } from '@/types';
 
+// Define a type for creating a user that accepts password instead of passwordHash
+type CreateUserData = Omit<User, 'id' | 'createdAt' | 'passwordHash'> & {
+  password: string;
+};
+
 const userService = {
   getAll: async (): Promise<User[]> => {
     // Using the correct endpoint from the image: /api/User
@@ -15,7 +20,7 @@ const userService = {
     return response.data;
   },
   
-  create: async (userData: Omit<User, 'id' | 'createdAt'>): Promise<User> => {
+  create: async (userData: CreateUserData): Promise<User> => {
     // Set role to "customer" by default if not provided
     const userDataWithRole = {
       ...userData,
@@ -27,7 +32,7 @@ const userService = {
     return response.data;
   },
   
-  update: async (id: string, userData: Partial<User>): Promise<User> => {
+  update: async (id: string, userData: Partial<User> | { password?: string }): Promise<User> => {
     // Using the correct endpoint from the image: /api/User/{id}
     const response = await api.put(`/User/${id}`, userData);
     return response.data;

@@ -85,6 +85,7 @@ const UserList = () => {
 
   const handleAddUser = async (values: UserFormValues) => {
     try {
+      // Now we're explicitly sending the password field which will be handled by our updated service
       const userData = {
         name: values.name,
         email: values.email,
