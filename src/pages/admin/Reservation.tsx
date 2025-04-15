@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -151,6 +150,9 @@ const ReservationPage = () => {
       const reservationData = {
         userId: user?.id || 'guest', // Fixed: Changed from auth.user?.id to user?.id
         customerId: customer.id,
+        name: values.customerName,
+        email: values.customerEmail,
+        phone: values.customerPhone,
         reservationDate: values.reservationDate,
         numberOfGuests: values.numberOfGuests,
         tableType: values.tableType,
@@ -196,6 +198,9 @@ const ReservationPage = () => {
       
       // Now update the reservation
       const reservationData = {
+        name: values.customerName,
+        email: values.customerEmail,
+        phone: values.customerPhone,
         reservationDate: values.reservationDate,
         numberOfGuests: values.numberOfGuests,
         tableType: values.tableType,

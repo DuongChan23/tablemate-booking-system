@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -96,6 +97,9 @@ const Reservations = () => {
       const reservationData = {
         userId: user?.id || 'guest', 
         customerId: 'cust1', // In a real app, this would be looked up or created
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
         reservationDate: new Date(reservationDateTime).toISOString(),
         numberOfGuests: parseInt(guests, 10),
         tableType,
