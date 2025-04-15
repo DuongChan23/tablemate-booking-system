@@ -33,17 +33,7 @@ const reservationService = {
     }
   },
   
-  getCustomerReservations: async (customerId: string): Promise<Reservation[]> => {
-    try {
-      const response = await api.get(`/Reservations/customer/${customerId}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching customer reservations for ${customerId}:`, error);
-      return [];
-    }
-  },
-  
-  create: async (reservationData: Omit<Reservation, 'id' | 'createdAt' | 'rowVersion'>): Promise<Reservation | null> => {
+  create: async (reservationData: Omit<Reservation, 'id' | 'createdAt'>): Promise<Reservation | null> => {
     try {
       const response = await api.post('/Reservations', reservationData);
       return response.data;
@@ -73,10 +63,9 @@ const reservationService = {
     }
   },
   
-  // For handling menu items associated with reservations
   addMenuItemToReservation: async (reservationId: string, menuItemId: string, quantity: number): Promise<ReservationMenuItem | null> => {
     try {
-      const response = await api.post(`/Reservations/${reservationId}/menu-item/${menuItemId}`, { quantity });
+      const response = await api.post(`/Reservations/${reservationId}/menu-items`, { menuItemId, quantity });
       return response.data;
     } catch (error) {
       console.error(`Error adding menu item to reservation ${reservationId}:`, error);
