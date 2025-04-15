@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -92,20 +91,21 @@ const Reservations = () => {
     setIsLoading(true);
     
     try {
-      // Here we would normally match the customer with the user or create a new customer
-      // For this demo, we're creating a simple reservation
+      // Format the reservation data exactly as expected by the backend
       const reservationData = {
-        userId: user?.id || 'guest', 
+        userId: user?.id || 'guest',
         customerId: 'cust1', // In a real app, this would be looked up or created
         name: formData.fullName,
-        email: formData.email,
+        email: formData.email, 
         phone: formData.phone,
         reservationDate: new Date(reservationDateTime).toISOString(),
         numberOfGuests: parseInt(guests, 10),
         tableType,
         specialRequests: formData.specialRequests || undefined,
-        status: 'pending' as const  // Type assertion to ensure correct typing
+        status: 'pending' as const
       };
+      
+      console.log('Submitting reservation data:', JSON.stringify(reservationData, null, 2));
       
       // Create the reservation in our service
       const newReservation = await reservationService.create(reservationData);

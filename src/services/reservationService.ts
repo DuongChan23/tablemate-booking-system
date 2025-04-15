@@ -35,7 +35,19 @@ const reservationService = {
   
   create: async (reservationData: Omit<Reservation, 'id' | 'createdAt'>): Promise<Reservation | null> => {
     try {
-      const response = await api.post('/Reservations', reservationData);
+      console.log('Sending reservation data:', JSON.stringify(reservationData, null, 2));
+      const response = await api.post('/Reservations', {
+        name: reservationData.name,
+        email: reservationData.email,
+        phone: reservationData.phone,
+        userId: reservationData.userId,
+        customerId: reservationData.customerId,
+        reservationDate: reservationData.reservationDate,
+        numberOfGuests: reservationData.numberOfGuests,
+        tableType: reservationData.tableType,
+        specialRequests: reservationData.specialRequests,
+        status: reservationData.status || 'pending'
+      });
       return response.data;
     } catch (error) {
       console.error('Error creating reservation:', error);
@@ -45,7 +57,19 @@ const reservationService = {
   
   update: async (id: string, reservationData: Partial<Reservation>): Promise<Reservation | null> => {
     try {
-      const response = await api.put(`/Reservations/${id}`, reservationData);
+      // Make sure we're only sending fields that are expected by the API
+      const updateData = {
+        name: reservationData.name,
+        email: reservationData.email,
+        phone: reservationData.phone,
+        reservationDate: reservationData.reservationDate,
+        numberOfGuests: reservationData.numberOfGuests,
+        tableType: reservationData.tableType,
+        specialRequests: reservationData.specialRequests,
+        status: reservationData.status
+      };
+      
+      const response = await api.put(`/Reservations/${id}`, updateData);
       return response.data;
     } catch (error) {
       console.error(`Error updating reservation ${id}:`, error);
